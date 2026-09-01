@@ -150,9 +150,9 @@ export default function ProgressChart({ data, unit }: ProgressChartProps) {
               />
             );
           }}
-          activeDot={
-            <CustomActiveDot dataLength={data.length} /> as React.ReactElement
-          }
+          activeDot={(props: any) => (
+            <CustomActiveDot {...props} dataLength={data.length} />
+          )}
         />
       </LineChart>
     </ResponsiveContainer>
