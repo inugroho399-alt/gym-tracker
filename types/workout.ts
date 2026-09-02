@@ -29,3 +29,22 @@ export interface WorkoutTemplate {
   day: SplitDay;
   exercises: TemplateExercise[];
 }
+
+export interface SessionSet {
+  type: 'PR' | 'Normal';
+  reps: number;
+  weight: number;
+}
+
+export interface SessionExercise {
+  exerciseId: string;
+  exerciseName: string;
+  sets: SessionSet[];
+}
+
+export interface WorkoutSession {
+  id: string;
+  date: string; // ISO string
+  day: SplitDay;
+  exercises: SessionExercise[];
+}
