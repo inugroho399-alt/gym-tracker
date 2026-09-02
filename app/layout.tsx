@@ -3,10 +3,14 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const viewport: Viewport = {
-  themeColor: "#030712",
+  themeColor: "#09090b",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -15,7 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Gym Progress Tracker",
-  description: "Track your gym workouts and monitor your progress over time.",
+  description: "Lacak sesi latihan dan progressive overload secara terstruktur.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -30,20 +34,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="antialiased selection:bg-indigo-500/30">
-      <body className={`${inter.className} bg-gray-950 text-white min-h-screen overflow-x-hidden relative`}>
-        {/* Premium Background Glow Effects */}
-        <div className="fixed inset-0 z-[-1] pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/10 blur-[120px]" />
-        </div>
-
+    <html lang="id" className="antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
+      <body className={`${inter.className} bg-zinc-950 text-zinc-100 min-h-screen overflow-x-hidden flex flex-col`}>
         <Header />
         
-        <main className="max-w-3xl mx-auto px-4 py-8 relative z-10">
+        <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 sm:py-8">
           {children}
         </main>
       </body>
     </html>
   );
 }
+

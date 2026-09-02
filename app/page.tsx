@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Plus, History, TrendingUp, Target, Activity, Flame } from "lucide-react";
+import { Plus, History, TrendingUp, Target, Activity, Flame, ChevronRight } from "lucide-react";
 import { getWorkoutSessions } from "@/lib/storage";
 import type { WorkoutSession } from "@/types/workout";
 
@@ -32,90 +31,92 @@ export default function HomePage() {
   });
 
   const stats = [
-    { label: "Total Sesi", value: totalWorkouts, icon: Activity, color: "text-blue-400", bg: "bg-blue-500/10" },
-    { label: "Volume (kg)", value: totalVolume.toLocaleString(), icon: Flame, color: "text-orange-400", bg: "bg-orange-500/10" },
-    { label: "Total Set", value: totalSets, icon: Target, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { label: "Total Sesi", value: totalWorkouts, icon: Activity, color: "text-emerald-400" },
+    { label: "Volume (kg)", value: totalVolume.toLocaleString("id-ID"), icon: Flame, color: "text-emerald-400" },
+    { label: "Total Set", value: totalSets, icon: Target, color: "text-emerald-400" },
   ];
 
-  if (!mounted) return null; // prevent hydration mismatch
+  if (!mounted) return null;
 
   return (
-    <div className="space-y-12 pb-10">
+    <div className="space-y-8 animate-fade-in">
       {/* Hero Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center space-y-4 pt-4"
-      >
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-gray-400 mb-2">
+      <div className="space-y-3 pt-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          Siap hancurkan rekor hari ini?
+          Progressive Overload Tracker
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-gray-500 tracking-tight">
-          Lacak, Pantau, <br className="sm:hidden" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Berkembang.</span>
+        
+        <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 tracking-tight leading-tight">
+          Lacak Beban, <br className="sm:hidden" />
+          <span className="text-emerald-400">Tingkatkan Performa.</span>
         </h1>
-        <p className="text-gray-400 text-lg max-w-md mx-auto leading-relaxed">
-          Ubah setiap keringat menjadi data. Pantau progres latihanmu dengan analitik real-time.
+        
+        <p className="text-zinc-400 text-sm sm:text-base max-w-lg leading-relaxed">
+          Catat setiap set PR & normal secara otomatis. Dapatkan saran kenaikan beban progresif berdasarkan histori latihanmu.
         </p>
-      </motion.div>
+      </div>
 
       {/* Quick Stats Dashboard */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-3 gap-3 sm:gap-4"
-      >
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {stats.map((stat, idx) => (
-          <div key={idx} className="relative overflow-hidden rounded-2xl border border-white/5 bg-gray-900/40 p-4 sm:p-5 backdrop-blur-sm group hover:bg-gray-900/60 transition-colors">
-            <div className={`w-8 h-8 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-              <stat.icon className="w-4 h-4" strokeWidth={2.5} />
+          <div 
+            key={idx} 
+            className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-1"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-400 font-medium">{stat.label}</span>
+              <stat.icon className={`w-4 h-4 ${stat.color}`} />
             </div>
-            <p className="text-2xl font-bold text-white tracking-tight">{stat.value}</p>
-            <p className="text-xs sm:text-sm text-gray-500 font-medium">{stat.label}</p>
+            <p className="text-xl sm:text-2xl font-bold text-zinc-100 tracking-tight">{stat.value}</p>
           </div>
         ))}
-      </motion.div>
+      </div>
 
       {/* Main Action Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-4"
-      >
+      <div className="space-y-4 pt-2">
         <Link
           href="/add"
-          className="group relative flex items-center justify-center gap-2 w-full py-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 active:scale-[0.98] text-white font-bold text-lg shadow-xl shadow-indigo-500/25 transition-all overflow-hidden"
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-zinc-950 font-bold text-base shadow-lg shadow-emerald-500/10 transition-all"
         >
-          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
-          <Plus className="w-5 h-5 relative z-10" strokeWidth={3} />
-          <span className="relative z-10">Mulai Latihan Baru</span>
+          <Plus className="w-5 h-5 stroke-[2.5]" />
+          <span>Mulai Sesi Latihan</span>
         </Link>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <Link
             href="/history"
-            className="flex flex-col items-center justify-center gap-2 py-6 rounded-2xl border border-white/5 bg-gray-900/50 hover:bg-white/5 hover:border-white/10 text-gray-300 hover:text-white font-semibold text-sm transition-all active:scale-[0.98]"
+            className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-200 transition-all"
           >
-            <History className="w-6 h-6 text-gray-400" />
-            <span>Riwayat Sesi</span>
+            <div className="flex items-center gap-3">
+              <History className="w-5 h-5 text-zinc-400" />
+              <div className="text-left">
+                <p className="text-sm font-semibold">Riwayat Sesi</p>
+                <p className="text-xs text-zinc-500">Daftar latihan lalu</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-zinc-500" />
           </Link>
 
           <Link
             href="/progress"
-            className="flex flex-col items-center justify-center gap-2 py-6 rounded-2xl border border-white/5 bg-gray-900/50 hover:bg-white/5 hover:border-white/10 text-gray-300 hover:text-white font-semibold text-sm transition-all active:scale-[0.98]"
+            className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-200 transition-all"
           >
-            <TrendingUp className="w-6 h-6 text-indigo-400" />
-            <span>Grafik Progress</span>
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <div className="text-left">
+                <p className="text-sm font-semibold">Grafik Progress</p>
+                <p className="text-xs text-zinc-500">Tren kekuatan PR</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-zinc-500" />
           </Link>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
+

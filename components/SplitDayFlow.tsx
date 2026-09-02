@@ -2,33 +2,39 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { 
+  Dumbbell, 
+  Flame, 
+  Zap, 
+  Footprints, 
+  Activity, 
+  Moon, 
+  ArrowLeft,
+  CheckCircle2
+} from "lucide-react";
 import { SplitDay, SessionExercise, SessionSet, WorkoutSession } from "@/types/workout";
 import { getTemplateForDay } from "@/lib/templates";
 import { addWorkoutSession, getLastSetsForExercise } from "@/lib/storage";
 
-const SPLIT_DAYS: { day: SplitDay; label: string; icon: string }[] = [
-  { day: "Push", label: "Push", icon: "💪" },
-  { day: "Pull", label: "Pull", icon: "🔙" },
-  { day: "Arms", label: "Arms", icon: "🦾" },
-  { day: "Legs", label: "Legs", icon: "🦵" },
-  { day: "Upper", label: "Upper Body", icon: "🦍" },
-  { day: "Lower", label: "Lower Body", icon: "🏃" },
-  { day: "Rest", label: "Rest Day", icon: "😴" },
+const SPLIT_DAYS: { day: SplitDay; label: string; icon: any }[] = [
+  { day: "Push", label: "Push", icon: Flame },
+  { day: "Pull", label: "Pull", icon: Zap },
+  { day: "Arms", label: "Arms", icon: Dumbbell },
+  { day: "Legs", label: "Legs", icon: Footprints },
+  { day: "Upper", label: "Upper Body", icon: Activity },
+  { day: "Lower", label: "Lower Body", icon: Footprints },
+  { day: "Rest", label: "Rest Day", icon: Moon },
 ];
 
-// Extended SessionSet for UI to track PR messages
 type UISessionSet = SessionSet & { prMessage?: string };
 
 export default function SplitDayFlow() {
   const router = useRouter();
   const [selectedDay, setSelectedDay] = useState<SplitDay | null>(null);
-
-  // Form state for Stage 2
   const [sessionData, setSessionData] = useState<Record<string, UISessionSet[]>>({});
 
   const handleSelectDay = (day: SplitDay) => {
     if (day === "Rest") {
-      // Auto-save rest day
       const session: WorkoutSession = {
         id: `sess-${Date.now()}`,
         date: new Date().toISOString(),
@@ -36,12 +42,10 @@ export default function SplitDayFlow() {
         exercises: [],
       };
       addWorkoutSession(session);
-      alert("Hari istirahat tercatat!");
-      router.push("/");
+      router.push("/history");
       return;
     }
 
-    // For other days, prefill sessionData from template
     const template = getTemplateForDay(day);
     const initialData: Record<string, UISessionSet[]> = {};
 
@@ -55,28 +59,26 @@ export default function SplitDayFlow() {
           let defaultWeight = ex.defaultWeights[weightIndex] ?? 0;
           let prMessage: string | undefined = undefined;
 
-          // Progressive overload logic based on last sets
           if (lastSets && lastSets[weightIndex]) {
             const lastSet = lastSets[weightIndex];
             
             if (plan.type === "PR" && lastSet.reps >= 12) {
               if (lastSet.weight === 0) {
-                prMessage = "Coba tambah reps";
+                prMessage = "Target 12 reps tercapai. Coba tambah repetisi!";
                 defaultWeight = 0;
               } else {
                 const increment = lastSet.weight < 20 ? 2.5 : 5;
                 defaultWeight = lastSet.weight + increment;
-                prMessage = `PR 12 reps tercapai — beban naik dari ${lastSet.weight}kg jadi ${defaultWeight}kg`;
+                prMessage = `PR 12 reps tercapai! Beban naik +${increment}kg (sebelumnya ${lastSet.weight}kg)`;
               }
             } else {
-              // Not PR or reps < 12, prefill same as last time
               defaultWeight = lastSet.weight;
             }
           }
 
           sets.push({
             type: plan.type,
-            reps: 0, // start empty
+            reps: 0,
             weight: defaultWeight,
             prMessage,
           });
@@ -109,7 +111,6 @@ export default function SplitDayFlow() {
     const template = getTemplateForDay(selectedDay);
     const exercises: SessionExercise[] = [];
 
-    // Validation & Data aggregation
     for (const ex of template.exercises) {
       const sets = sessionData[ex.id];
       const cleanSets: SessionSet[] = [];
@@ -117,7 +118,7 @@ export default function SplitDayFlow() {
       for (let i = 0; i < sets.length; i++) {
         if (!sets[i].reps || sets[i].reps <= 0) {
           alert(`Harap isi reps untuk set ke-${i + 1} pada ${ex.name}`);
-          return; // Abort save
+          return;
         }
         cleanSets.push({
           type: sets[i].type,
@@ -140,23 +141,28 @@ export default function SplitDayFlow() {
     };
 
     addWorkoutSession(session);
-    router.push("/");
+    router.push("/history");
   };
 
   if (!selectedDay) {
     // TAHAP 1: Pilih Split Day
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {SPLIT_DAYS.map((item) => (
-          <button
-            key={item.day}
-            onClick={() => handleSelectDay(item.day)}
-            className="flex flex-col items-center justify-center p-6 rounded-2xl border border-gray-800 bg-gray-900 hover:bg-gray-800 hover:border-gray-600 transition-all active:scale-95"
-          >
-            <span className="text-3xl mb-3">{item.icon}</span>
-            <span className="text-gray-200 font-medium">{item.label}</span>
-          </button>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {SPLIT_DAYS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.day}
+              onClick={() => handleSelectDay(item.day)}
+              className="flex flex-col items-center justify-center p-5 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/80 hover:border-emerald-500/40 transition-all active:scale-[0.98] group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-emerald-400 mb-3 group-hover:scale-105 transition-transform">
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="text-zinc-200 font-semibold text-sm">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     );
   }
@@ -165,48 +171,52 @@ export default function SplitDayFlow() {
   const template = getTemplateForDay(selectedDay);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between bg-gray-900 border border-gray-800 p-4 rounded-xl">
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl">
         <div>
-          <h2 className="text-xl font-bold text-white">Sesi {selectedDay}</h2>
-          <p className="text-sm text-gray-400 mt-1">
-            Isi repetisi yang berhasil dilakukan.
+          <h2 className="text-lg font-bold text-zinc-100">Sesi {selectedDay}</h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Isi beban dan repetisi yang berhasil diselesaikan.
           </p>
         </div>
         <button
           onClick={() => setSelectedDay(null)}
-          className="text-sm text-indigo-400 hover:text-indigo-300"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
         >
-          Ubah Split
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Ganti Split
         </button>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {template.exercises.map((ex, exIndex) => {
           const sets = sessionData[ex.id];
           return (
-            <div key={ex.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-100 mb-4 flex items-center">
-                <span className="text-indigo-500 mr-2">{exIndex + 1}.</span>
+            <div key={ex.id} className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-4">
+              <h3 className="font-bold text-zinc-100 text-sm sm:text-base flex items-center gap-2">
+                <span className="text-emerald-400 text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                  {exIndex + 1}
+                </span>
                 {ex.name}
               </h3>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {sets.map((set, i) => (
-                  <div key={i} className="flex flex-col gap-2">
-                    {/* PR Overload Message */}
+                  <div key={i} className="space-y-2">
                     {set.prMessage && (
-                      <div className="text-xs font-semibold text-emerald-400 bg-emerald-400/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg w-fit">
-                        {set.prMessage}
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        <span>{set.prMessage}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-3">
-                      {/* Badge */}
+                    
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {/* Badge Set Type */}
                       <div
-                        className={`w-14 text-center py-1.5 text-xs font-bold rounded-lg border ${
+                        className={`w-14 text-center py-2 text-xs font-bold rounded-lg border shrink-0 ${
                           set.type === "PR"
-                            ? "bg-amber-900/30 border-amber-500/50 text-amber-400"
-                            : "bg-gray-800/50 border-gray-700 text-gray-400"
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                            : "bg-zinc-800/80 border-zinc-700 text-zinc-400"
                         }`}
                       >
                         {set.type}
@@ -223,14 +233,14 @@ export default function SplitDayFlow() {
                             handleSetChange(ex.id, i, "weight", Number(e.target.value))
                           }
                           placeholder="0"
-                          className="w-full bg-gray-950 border border-gray-700 rounded-lg pl-3 pr-8 py-2 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-8 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
                         />
-                        <span className="absolute right-3 top-2.5 text-xs text-gray-500">
+                        <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
                           kg
                         </span>
                       </div>
 
-                      <span className="text-gray-600 font-medium">×</span>
+                      <span className="text-zinc-600 text-sm font-bold">×</span>
 
                       {/* Reps Input */}
                       <div className="flex-1 relative">
@@ -242,9 +252,9 @@ export default function SplitDayFlow() {
                             handleSetChange(ex.id, i, "reps", Number(e.target.value))
                           }
                           placeholder="Reps"
-                          className="w-full bg-gray-950 border border-gray-700 rounded-lg pl-3 pr-10 py-2 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-10 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
                         />
-                        <span className="absolute right-3 top-2.5 text-xs text-gray-500">
+                        <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
                           reps
                         </span>
                       </div>
@@ -259,10 +269,11 @@ export default function SplitDayFlow() {
 
       <button
         onClick={handleSaveSession}
-        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-indigo-900/20"
+        className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl transition-all active:scale-[0.99] shadow-lg shadow-emerald-500/10"
       >
-        Simpan Sesi
+        Simpan Sesi Latihan
       </button>
     </div>
   );
 }
+

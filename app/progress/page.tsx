@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { TrendingUp, BarChart2, Plus, Info } from "lucide-react";
-import type { WorkoutSession, SessionExercise } from "@/types/workout";
+import { TrendingUp, BarChart2, Plus, Info, ChevronDown } from "lucide-react";
+import type { WorkoutSession } from "@/types/workout";
 import { getWorkoutSessions } from "@/lib/storage";
 
 // ─── Dynamic import recharts (client-only, no SSR) ───────────────────────────
@@ -12,9 +12,9 @@ import { getWorkoutSessions } from "@/lib/storage";
 const ProgressChart = dynamic(() => import("@/components/ProgressChart"), {
   ssr: false,
   loading: () => (
-    <div className="h-[300px] flex flex-col items-center justify-center gap-3 bg-gray-900/30 rounded-2xl border border-white/5 backdrop-blur-sm">
-      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-      <p className="text-gray-500 text-sm font-medium">Memuat grafik interaktif…</p>
+    <div className="h-[260px] flex flex-col items-center justify-center gap-2 bg-zinc-900/30 rounded-xl border border-zinc-800">
+      <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <p className="text-zinc-500 text-xs font-medium">Memuat grafik interaktif…</p>
     </div>
   ),
 });
@@ -28,17 +28,13 @@ const METRICS: { value: Metric; label: string; unit: string }[] = [
   { value: "totalVolume", label: "Total Volume", unit: "kg" },
 ];
 
-// ─── Data transform ───────────────────────────────────────────────────────────
-
 export interface ChartPoint {
   date: string;
   value: number;
 }
 
 function buildChartData(sessions: WorkoutSession[], exerciseId: string, metric: Metric): ChartPoint[] {
-  // Sort sessions chronological for the chart
   const sorted = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
   const points: ChartPoint[] = [];
 
   for (const session of sorted) {
@@ -56,8 +52,7 @@ function buildChartData(sessions: WorkoutSession[], exerciseId: string, metric: 
       if (prSets.length > 0) {
         value = Math.max(...prSets.map((s) => s.weight));
       } else {
-        // Fallback to normal max if no PR sets
-        value = ex.sets.length > 0 ? Math.max(...ex.sets.map(s => s.weight)) : 0;
+        value = ex.sets.length > 0 ? Math.max(...ex.sets.map((s) => s.weight)) : 0;
       }
     } else {
       value = ex.sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
@@ -73,14 +68,14 @@ function buildChartData(sessions: WorkoutSession[], exerciseId: string, metric: 
 
 function EmptyExerciseState() {
   return (
-    <div className="rounded-3xl border border-dashed border-white/10 bg-gray-900/20 p-12 text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto">
-        <BarChart2 className="w-8 h-8 text-indigo-400" />
+    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-10 text-center space-y-4">
+      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+        <BarChart2 className="w-6 h-6" />
       </div>
-      <div className="space-y-2">
-        <p className="text-xl text-white font-bold tracking-tight">Pilih exercise untuk melihat grafik</p>
-        <p className="text-gray-500 text-sm max-w-sm mx-auto">
-          Pilih salah satu exercise dari dropdown di atas untuk menampilkan tren kekuatan dan volumenmu.
+      <div className="space-y-1">
+        <p className="text-base text-zinc-100 font-bold">Pilih gerakan untuk melihat grafik</p>
+        <p className="text-zinc-500 text-xs max-w-xs mx-auto">
+          Pilih salah satu gerakan dari menu di atas untuk menganalisis tren perkembangan kekuatanmu.
         </p>
       </div>
     </div>
@@ -89,58 +84,25 @@ function EmptyExerciseState() {
 
 function NotEnoughDataState({ name }: { name: string }) {
   return (
-    <div className="rounded-3xl border border-dashed border-white/10 bg-gray-900/20 p-10 text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto">
-        <Info className="w-8 h-8 text-indigo-400" />
+    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-8 text-center space-y-4">
+      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+        <Info className="w-5 h-5" />
       </div>
-      <div className="space-y-2">
-        <p className="text-xl text-white font-bold tracking-tight">
-          Butuh 1 sesi lagi
-        </p>
-        <p className="text-gray-500 text-sm max-w-sm mx-auto">
-          Baru ada 1 catatan untuk <span className="text-gray-300 font-medium">{name}</span>.
-          Grafik akan muncul setelah kamu menyelesaikan 2 sesi!
+      <div className="space-y-1">
+        <p className="text-base text-zinc-100 font-bold">Butuh minimal 2 sesi</p>
+        <p className="text-zinc-500 text-xs max-w-xs mx-auto">
+          Baru ada 1 catatan untuk <span className="text-zinc-200 font-semibold">{name}</span>. Grafik akan muncul setelah kamu menyelesaikan 1 sesi lagi!
         </p>
       </div>
       <Link
         href="/add"
-        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20"
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-all active:scale-[0.98]"
       >
-        <Plus className="w-4 h-4" />
-        Tambah Latihan
+        <Plus className="w-4 h-4 stroke-[2.5]" />
+        <span>Tambah Latihan</span>
       </Link>
     </div>
   );
-}
-
-function NoDataState({ name }: { name: string }) {
-  return (
-    <div className="rounded-3xl border border-dashed border-white/10 bg-gray-900/20 p-10 text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-gray-800/50 flex items-center justify-center mx-auto">
-        <TrendingUp className="w-8 h-8 text-gray-500" />
-      </div>
-      <div className="space-y-2">
-        <p className="text-xl text-white font-bold tracking-tight">Belum ada catatan untuk {name}</p>
-        <p className="text-gray-500 text-sm max-w-sm mx-auto">
-          Catat sesi latihan pertamamu untuk exercise ini agar grafiknya mulai terbentuk!
-        </p>
-      </div>
-      <Link
-        href="/add"
-        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20"
-      >
-        <Plus className="w-4 h-4" />
-        Catat Sekarang
-      </Link>
-    </div>
-  );
-}
-
-// ─── Stats summary bar ────────────────────────────────────────────────────────
-
-interface StatsBadge {
-  label: string;
-  value: string;
 }
 
 function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) {
@@ -149,35 +111,36 @@ function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) 
   const first = values[0];
   const peak = Math.max(...values);
   const delta = current - first;
-  const unit = metric === "maxWeight" ? "kg" : "kg";
+  const unit = "kg";
 
-  const stats: StatsBadge[] = [
-    { label: "Sesi", value: `${data.length}×` },
+  const stats = [
+    { label: "Total Sesi", value: `${data.length}×` },
     { label: "Terkini", value: `${current}${unit}` },
     { label: "Tertinggi", value: `${peak}${unit}` },
     {
-      label: "Perkembangan",
+      label: "Progress",
       value: `${delta > 0 ? "+" : ""}${delta}${unit}`,
+      isDelta: true,
     },
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-2 sm:gap-4">
-      {stats.map(({ label, value }) => (
+    <div className="grid grid-cols-4 gap-2 sm:gap-3">
+      {stats.map(({ label, value, isDelta }) => (
         <div
           key={label}
-          className="rounded-2xl bg-gray-900/50 border border-white/5 p-3 text-center backdrop-blur-sm"
+          className="rounded-xl bg-zinc-900/60 border border-zinc-800 p-3 text-center"
         >
-          <p className="text-xs text-gray-500 mb-1 font-medium">{label}</p>
+          <p className="text-[11px] text-zinc-400 font-medium mb-0.5">{label}</p>
           <p
             className={`text-sm sm:text-base font-bold tracking-tight ${
-              label === "Perkembangan"
+              isDelta
                 ? delta > 0
                   ? "text-emerald-400"
                   : delta < 0
                   ? "text-red-400"
-                  : "text-gray-400"
-                : "text-white"
+                  : "text-zinc-400"
+                : "text-zinc-100"
             }`}
           >
             {value}
@@ -197,14 +160,25 @@ export default function ProgressPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setSessions(getWorkoutSessions());
+    const loadedSessions = getWorkoutSessions();
+    setSessions(loadedSessions);
     setMounted(true);
+
+    // Auto-select first available exercise if none selected
+    if (loadedSessions.length > 0) {
+      for (const sess of loadedSessions) {
+        if (sess.exercises.length > 0) {
+          setSelectedId(sess.exercises[0].exerciseId);
+          break;
+        }
+      }
+    }
   }, []);
 
   const uniqueExercises = useMemo(() => {
     const map = new Map<string, string>();
-    sessions.forEach(session => {
-      session.exercises.forEach(ex => {
+    sessions.forEach((session) => {
+      session.exercises.forEach((ex) => {
         map.set(ex.exerciseId, ex.exerciseName);
       });
     });
@@ -223,55 +197,53 @@ export default function ProgressPage() {
   if (!mounted) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 animate-fade-in">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Grafik Progress</h1>
-          <p className="text-gray-400 text-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">Grafik Progress</h1>
+          <p className="text-zinc-400 text-xs sm:text-sm mt-0.5">
             Pantau perkembangan dan tren kekuatan dari waktu ke waktu.
           </p>
         </div>
 
-        <div className="relative">
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className="w-full sm:w-auto appearance-none rounded-xl bg-gray-900/80 border border-white/10 px-4 py-2.5 pr-10 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all"
-          >
-            <option value="" disabled>— Pilih Exercise —</option>
-            {uniqueExercises.map((ex) => (
-              <option key={ex.id} value={ex.id}>
-                {ex.name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        {uniqueExercises.length > 0 && (
+          <div className="relative">
+            <select
+              value={selectedId}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="w-full sm:w-auto appearance-none rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 pr-9 text-zinc-100 text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
+            >
+              <option value="" disabled>— Pilih Exercise —</option>
+              {uniqueExercises.map((ex) => (
+                <option key={ex.id} value={ex.id}>
+                  {ex.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500" />
           </div>
-        </div>
+        )}
       </div>
 
       {/* Content area */}
       {!selectedId ? (
         <EmptyExerciseState />
-      ) : chartData.length === 0 ? (
-        <NoDataState name={selectedExercise?.name ?? ""} />
       ) : chartData.length < 2 ? (
         <NotEnoughDataState name={selectedExercise?.name ?? ""} />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Metric toggle */}
-          <div className="flex rounded-xl bg-gray-900/60 border border-white/5 p-1.5 gap-1.5 backdrop-blur-sm w-fit mx-auto sm:mx-0">
+          <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-1 gap-1 w-fit">
             {METRICS.map((m) => (
               <button
                 key={m.value}
                 type="button"
                 onClick={() => setMetric(m.value)}
-                className={`py-2 px-4 rounded-lg text-sm font-semibold transition-all ${
+                className={`py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
                   metric === m.value
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >
                 {m.label}
@@ -283,14 +255,14 @@ export default function ProgressPage() {
           <StatsSummary data={chartData} metric={metric} />
 
           {/* Chart card */}
-          <div className="rounded-3xl border border-white/5 bg-gray-900/40 p-5 sm:p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-5 h-5 text-indigo-400" />
-              <h3 className="font-bold text-white tracking-tight">
-                {selectedExercise?.name} <span className="text-gray-500 font-normal ml-1">— {metricConfig.label}</span>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <h3 className="font-bold text-zinc-100 text-sm sm:text-base">
+                {selectedExercise?.name} <span className="text-zinc-500 font-normal text-xs sm:text-sm ml-1">— {metricConfig.label}</span>
               </h3>
             </div>
-            <div className="h-[280px]">
+            <div className="h-[260px]">
               <ProgressChart
                 data={chartData}
                 unit={metricConfig.unit}
@@ -303,3 +275,4 @@ export default function ProgressPage() {
     </div>
   );
 }
+
