@@ -3,14 +3,14 @@
  * Type-safe localStorage helpers for the Gym Progress Tracker.
  */
 
-import type { Exercise, WorkoutEntry, WorkoutSet } from "@/types/workout";
+import type { Exercise, WorkoutEntry, WorkoutSet, WorkoutSession, SplitDay } from "@/types/workout";
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
 
 const KEYS = {
   EXERCISES: "gym-tracker-exercises",
-  ENTRIES: "gym-tracker-entries",
-  SEEDED: "gym-tracker-seeded-v2", // version bump for force seed
+  SEEDED: "gym-tracker-seeded-v3", // version bump for force seed
+  SESSIONS: "gym-tracker-sessions",
 } as const;
 
 // ─── Default seed data (User's specific routine) ─────────────────────────────
@@ -56,50 +56,7 @@ function createSet(reps: number, weight: number): WorkoutSet {
   return { id: `set-${Math.random().toString(36).substr(2, 9)}`, reps, weight };
 }
 
-const d = new Date();
-d.setDate(d.getDate() - 1); // Mock baseline as yesterday
-const dateStr = d.toISOString();
-
-const DEFAULT_ENTRIES: WorkoutEntry[] = [
-  // Push Baseline
-  { id: "e1", date: dateStr, exerciseId: "ex-incline-bench", sets: [createSet(12, 7.5), createSet(12, 5), createSet(12, 5)], note: "Push: 1 PR, 2 Normal" },
-  { id: "e2", date: dateStr, exerciseId: "ex-peck-fly", sets: [createSet(12, 25), createSet(12, 20)], note: "Push" },
-  { id: "e3", date: dateStr, exerciseId: "ex-butterfly", sets: [createSet(12, 20), createSet(12, 15), createSet(12, 15)], note: "Push: 1 PR, 2 Normal" },
-  { id: "e4", date: dateStr, exerciseId: "ex-reverse-pec-fly", sets: [createSet(12, 35), createSet(12, 30), createSet(12, 30)], note: "Push: 1 PR, 2 Normal" },
-  { id: "e5", date: dateStr, exerciseId: "ex-cable-lateral-raise", sets: [createSet(12, 7), createSet(12, 5), createSet(12, 5)], note: "Push: 1 PR, 2 Normal" },
-  { id: "e6", date: dateStr, exerciseId: "ex-db-lateral-raise", sets: [createSet(12, 8), createSet(12, 6)] },
-  { id: "e7", date: dateStr, exerciseId: "ex-triceps-pushdown", sets: [createSet(12, 35), createSet(12, 30)] },
-  { id: "e8", date: dateStr, exerciseId: "ex-chest-push-depan", sets: [createSet(12, 15), createSet(12, 10)] },
-  { id: "e9", date: dateStr, exerciseId: "ex-db-bench", sets: [createSet(12, 10), createSet(12, 8)] },
-
-  // Pull Baseline
-  { id: "e10", date: dateStr, exerciseId: "ex-pull-up", sets: [createSet(12, 40), createSet(12, 35), createSet(12, 35)], note: "Pull: 1 PR, 2 Normal" },
-  { id: "e11", date: dateStr, exerciseId: "ex-wide-row", sets: [createSet(12, 35), createSet(12, 30), createSet(12, 30), createSet(12, 30)], note: "Pull: 1 PR, 3 Normal" },
-  { id: "e12", date: dateStr, exerciseId: "ex-close-row", sets: [createSet(12, 35), createSet(12, 30), createSet(12, 30)], note: "Pull: 1 PR, 2 Normal" },
-  { id: "e13", date: dateStr, exerciseId: "ex-face-pull", sets: [createSet(12, 35), createSet(12, 35), createSet(12, 30), createSet(12, 30)], note: "Pull: 2 PR, 2 Normal" },
-  { id: "e14", date: dateStr, exerciseId: "ex-cable-shrug", sets: [createSet(12, 60), createSet(12, 55), createSet(12, 55)], note: "Pull: 1 PR, 2 Normal" },
-  { id: "e15", date: dateStr, exerciseId: "ex-plate-shrug", sets: [createSet(12, 15), createSet(12, 10)] },
-  { id: "e16", date: dateStr, exerciseId: "ex-biceps-cable-curl", sets: [createSet(12, 25), createSet(12, 25)], note: "Pull: 2 Normal" },
-
-  // Arms Baseline (Shoulder Priority)
-  { id: "e17", date: dateStr, exerciseId: "ex-shoulder-press", sets: [createSet(12, 20), createSet(12, 20), createSet(12, 15), createSet(12, 15)], note: "Arms: 2 PR, 2 Normal" },
-  { id: "e18", date: dateStr, exerciseId: "ex-triceps-overhead", sets: [createSet(12, 35), createSet(12, 30), createSet(12, 30)], note: "Arms: 1 PR, 2 Normal" },
-  { id: "e19", date: dateStr, exerciseId: "ex-hammer-curl", sets: [createSet(12, 30), createSet(12, 25), createSet(12, 25)], note: "Arms: 1 PR, 2 Normal" },
-
-  // Legs & Lower Baseline
-  { id: "e20", date: dateStr, exerciseId: "ex-squat", sets: [createSet(12, 7.5), createSet(12, 5), createSet(12, 5)], note: "Legs: 1 PR, 2 Normal" },
-  { id: "e21", date: dateStr, exerciseId: "ex-rdl", sets: [createSet(12, 5), createSet(12, 2.5), createSet(12, 2.5), createSet(12, 2.5)], note: "Legs: 1 PR, 3 Normal" },
-  { id: "e22", date: dateStr, exerciseId: "ex-leg-ext", sets: [createSet(12, 50), createSet(12, 50), createSet(12, 50)], note: "Legs: 3 Normal" },
-  { id: "e23", date: dateStr, exerciseId: "ex-leg-curl", sets: [createSet(12, 35), createSet(12, 35), createSet(12, 35)], note: "Legs: 3 Normal" },
-  { id: "e24", date: dateStr, exerciseId: "ex-calf-raise", sets: [createSet(12, 50), createSet(12, 50), createSet(12, 50), createSet(12, 50)], note: "Legs: 1 PR, 3 Normal" },
-  { id: "e27", date: dateStr, exerciseId: "ex-leg-press", sets: [createSet(12, 90), createSet(12, 80), createSet(12, 80)], note: "Lower: 1 PR, 2 Normal" },
-  { id: "e28", date: dateStr, exerciseId: "ex-abductor", sets: [createSet(12, 40), createSet(12, 40), createSet(12, 40)], note: "Lower: 3 Normal" },
-  { id: "e29", date: dateStr, exerciseId: "ex-sit-up", sets: [createSet(12, 0), createSet(12, 0), createSet(12, 0)], note: "Sit up 3 sets 12 reps" },
-
-  // Upper & Misc Baseline
-  { id: "e25", date: dateStr, exerciseId: "ex-dips", sets: [createSet(10, 0), createSet(8, 0)], note: "Upper: Dips" },
-  { id: "e26", date: dateStr, exerciseId: "ex-forearms", sets: [createSet(12, 40), createSet(12, 40), createSet(12, 40)], note: "Forearms 40kg (bawah 6kg, atas 6kg)" },
-];
+const DEFAULT_ENTRIES: WorkoutEntry[] = [];
 
 // ─── Low-level primitives ─────────────────────────────────────────────────────
 
@@ -189,3 +146,20 @@ export function getEntriesForExercise(exerciseId: string): WorkoutEntry[] {
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 
+// ─── Workout session helpers ──────────────────────────────────────────────────
+
+export function getWorkoutSessions(): WorkoutSession[] {
+  const stored = readJSON<WorkoutSession[]>(KEYS.SESSIONS);
+  if (!stored) return [];
+  return [...stored].sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+export function addWorkoutSession(session: WorkoutSession): void {
+  const existing = getWorkoutSessions();
+  writeJSON(KEYS.SESSIONS, [session, ...existing]);
+}
+
+export function getLastSessionForDay(day: SplitDay): WorkoutSession | null {
+  const all = getWorkoutSessions();
+  return all.find((s) => s.day === day) ?? null;
+}
