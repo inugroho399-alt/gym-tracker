@@ -3,4 +3,13 @@
  * Central re-export barrel for all app types.
  */
 
-export type { Exercise, WorkoutSet, WorkoutEntry } from "./workout";
+export type {
+  Exercise,
+  SplitDay,
+  SetPlan,
+  TemplateExercise,
+  WorkoutTemplate,
+  SessionSet,
+  SessionExercise,
+  WorkoutSession,
+} from "./workout";
