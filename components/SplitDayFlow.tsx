@@ -15,6 +15,7 @@ import {
 import { SplitDay, SessionExercise, SessionSet, WorkoutSession } from "@/types/workout";
 import { getTemplateForDay } from "@/lib/templates";
 import { addWorkoutSession, getLastSetsForExercise } from "@/lib/storage";
+import Stopwatch from "@/components/Stopwatch";
 
 const SPLIT_DAYS: { day: SplitDay; label: string; icon: any }[] = [
   { day: "Push", label: "Push", icon: Flame },
@@ -171,109 +172,112 @@ export default function SplitDayFlow() {
   const template = getTemplateForDay(selectedDay);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl">
-        <div>
-          <h2 className="text-lg font-bold text-zinc-100">Sesi {selectedDay}</h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Isi beban dan repetisi yang berhasil diselesaikan.
-          </p>
+    <>
+      <div className="space-y-6 pb-24 animate-fade-in">
+        <div className="flex items-center justify-between bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl">
+          <div>
+            <h2 className="text-lg font-bold text-zinc-100">Sesi {selectedDay}</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Isi beban dan repetisi yang berhasil diselesaikan.
+            </p>
+          </div>
+          <button
+            onClick={() => setSelectedDay(null)}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Ganti Split
+          </button>
         </div>
+
+        <div className="space-y-4">
+          {template.exercises.map((ex, exIndex) => {
+            const sets = sessionData[ex.id];
+            return (
+              <div key={ex.id} className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-4">
+                <h3 className="font-bold text-zinc-100 text-sm sm:text-base flex items-center gap-2">
+                  <span className="text-emerald-400 text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                    {exIndex + 1}
+                  </span>
+                  {ex.name}
+                </h3>
+
+                <div className="space-y-3">
+                  {sets.map((set, i) => (
+                    <div key={i} className="space-y-2">
+                      {set.prMessage && (
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>{set.prMessage}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        {/* Badge Set Type */}
+                        <div
+                          className={`w-14 text-center py-2 text-xs font-bold rounded-lg border shrink-0 ${
+                            set.type === "PR"
+                              ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                              : "bg-zinc-800/80 border-zinc-700 text-zinc-400"
+                          }`}
+                        >
+                          {set.type}
+                        </div>
+
+                        {/* Weight Input */}
+                        <div className="flex-1 relative">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            value={set.weight === 0 && set.type === "Normal" && ex.defaultWeights[0] === 0 ? "" : set.weight}
+                            onChange={(e) =>
+                              handleSetChange(ex.id, i, "weight", Number(e.target.value))
+                            }
+                            placeholder="0"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-8 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
+                          />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
+                            kg
+                          </span>
+                        </div>
+
+                        <span className="text-zinc-600 text-sm font-bold">×</span>
+
+                        {/* Reps Input */}
+                        <div className="flex-1 relative">
+                          <input
+                            type="number"
+                            min="1"
+                            value={set.reps || ""}
+                            onChange={(e) =>
+                              handleSetChange(ex.id, i, "reps", Number(e.target.value))
+                            }
+                            placeholder="Reps"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-10 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
+                          />
+                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
+                            reps
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         <button
-          onClick={() => setSelectedDay(null)}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+          onClick={handleSaveSession}
+          className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl transition-all active:scale-[0.99] shadow-lg shadow-emerald-500/10"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Ganti Split
+          Simpan Sesi Latihan
         </button>
       </div>
 
-      <div className="space-y-4">
-        {template.exercises.map((ex, exIndex) => {
-          const sets = sessionData[ex.id];
-          return (
-            <div key={ex.id} className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-4">
-              <h3 className="font-bold text-zinc-100 text-sm sm:text-base flex items-center gap-2">
-                <span className="text-emerald-400 text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                  {exIndex + 1}
-                </span>
-                {ex.name}
-              </h3>
-
-              <div className="space-y-3">
-                {sets.map((set, i) => (
-                  <div key={i} className="space-y-2">
-                    {set.prMessage && (
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
-                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                        <span>{set.prMessage}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {/* Badge Set Type */}
-                      <div
-                        className={`w-14 text-center py-2 text-xs font-bold rounded-lg border shrink-0 ${
-                          set.type === "PR"
-                            ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                            : "bg-zinc-800/80 border-zinc-700 text-zinc-400"
-                        }`}
-                      >
-                        {set.type}
-                      </div>
-
-                      {/* Weight Input */}
-                      <div className="flex-1 relative">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          value={set.weight === 0 && set.type === "Normal" && ex.defaultWeights[0] === 0 ? "" : set.weight}
-                          onChange={(e) =>
-                            handleSetChange(ex.id, i, "weight", Number(e.target.value))
-                          }
-                          placeholder="0"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-8 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
-                        />
-                        <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
-                          kg
-                        </span>
-                      </div>
-
-                      <span className="text-zinc-600 text-sm font-bold">×</span>
-
-                      {/* Reps Input */}
-                      <div className="flex-1 relative">
-                        <input
-                          type="number"
-                          min="1"
-                          value={set.reps || ""}
-                          onChange={(e) =>
-                            handleSetChange(ex.id, i, "reps", Number(e.target.value))
-                          }
-                          placeholder="Reps"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-10 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
-                        />
-                        <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
-                          reps
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <button
-        onClick={handleSaveSession}
-        className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl transition-all active:scale-[0.99] shadow-lg shadow-emerald-500/10"
-      >
-        Simpan Sesi Latihan
-      </button>
-    </div>
+      <Stopwatch />
+    </>
   );
 }
-

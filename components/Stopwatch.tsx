@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { Play, Pause, Square } from "lucide-react";
 
 export default function Stopwatch() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (isRunning) {
@@ -40,10 +34,8 @@ export default function Stopwatch() {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 p-2 pl-4 pr-3 rounded-full shadow-2xl shadow-black/50">
+  return (
+    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 p-2 pl-4 pr-3 rounded-full shadow-2xl shadow-black/50">
       <span className="font-mono text-xl font-bold text-zinc-100 tracking-wider">
         {formatTime(time)}
       </span>
@@ -68,8 +60,7 @@ export default function Stopwatch() {
       >
         <Square className="w-4 h-4 fill-current" />
       </button>
-    </div>,
-    document.body
+    </div>
   );
 }
 

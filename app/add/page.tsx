@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 export default function AddWorkoutPage() {
   return (
-    <div className="space-y-6 max-w-2xl mx-auto animate-fade-in">
+    <div className="space-y-6 max-w-2xl mx-auto">
       {/* Page header */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+      <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4 animate-fade-in">
         <div>
           <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">Mulai Latihan</h1>
           <p className="text-zinc-400 text-xs sm:text-sm mt-0.5">
