@@ -4,8 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { TrendingUp, BarChart2, Plus, Info } from "lucide-react";
-import type { Exercise, WorkoutEntry } from "@/types/workout";
-import { getExercises, getEntriesForExercise } from "@/lib/storage";
+import type { WorkoutSession, SessionExercise } from "@/types/workout";
+import { getWorkoutSessions } from "@/lib/storage";
 
 // ─── Dynamic import recharts (client-only, no SSR) ───────────────────────────
 
@@ -24,7 +24,7 @@ const ProgressChart = dynamic(() => import("@/components/ProgressChart"), {
 type Metric = "maxWeight" | "totalVolume";
 
 const METRICS: { value: Metric; label: string; unit: string }[] = [
-  { value: "maxWeight", label: "Beban Maksimum", unit: "kg" },
+  { value: "maxWeight", label: "Beban PR Maksimum", unit: "kg" },
   { value: "totalVolume", label: "Total Volume", unit: "kg" },
 ];
 
@@ -35,22 +35,38 @@ export interface ChartPoint {
   value: number;
 }
 
-function buildChartData(entries: WorkoutEntry[], metric: Metric): ChartPoint[] {
-  return entries.map((entry) => {
-    const dateLabel = new Date(entry.date).toLocaleDateString("id-ID", {
+function buildChartData(sessions: WorkoutSession[], exerciseId: string, metric: Metric): ChartPoint[] {
+  // Sort sessions chronological for the chart
+  const sorted = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  const points: ChartPoint[] = [];
+
+  for (const session of sorted) {
+    const ex = session.exercises.find((e) => e.exerciseId === exerciseId);
+    if (!ex) continue;
+
+    const dateLabel = new Date(session.date).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
     });
 
-    let value: number;
+    let value = 0;
     if (metric === "maxWeight") {
-      value = Math.max(...entry.sets.map((s) => s.weight));
+      const prSets = ex.sets.filter((s) => s.type === "PR");
+      if (prSets.length > 0) {
+        value = Math.max(...prSets.map((s) => s.weight));
+      } else {
+        // Fallback to normal max if no PR sets
+        value = ex.sets.length > 0 ? Math.max(...ex.sets.map(s => s.weight)) : 0;
+      }
     } else {
-      value = entry.sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      value = ex.sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
     }
 
-    return { date: dateLabel, value };
-  });
+    points.push({ date: dateLabel, value });
+  }
+
+  return points;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -175,31 +191,32 @@ function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function ProgressPage() {
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
-  const [entries, setEntries] = useState<WorkoutEntry[]>([]);
   const [metric, setMetric] = useState<Metric>("maxWeight");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setExercises(getExercises());
+    setSessions(getWorkoutSessions());
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!selectedId) {
-      setEntries([]);
-      return;
-    }
-    setEntries(getEntriesForExercise(selectedId));
-  }, [selectedId]);
+  const uniqueExercises = useMemo(() => {
+    const map = new Map<string, string>();
+    sessions.forEach(session => {
+      session.exercises.forEach(ex => {
+        map.set(ex.exerciseId, ex.exerciseName);
+      });
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [sessions]);
 
-  const selectedExercise = exercises.find((ex) => ex.id === selectedId);
+  const selectedExercise = uniqueExercises.find((ex) => ex.id === selectedId);
 
   const chartData = useMemo<ChartPoint[]>(() => {
-    if (entries.length === 0) return [];
-    return buildChartData(entries, metric);
-  }, [entries, metric]);
+    if (!selectedId) return [];
+    return buildChartData(sessions, selectedId, metric);
+  }, [sessions, selectedId, metric]);
 
   const metricConfig = METRICS.find((m) => m.value === metric)!;
 
@@ -223,7 +240,7 @@ export default function ProgressPage() {
             className="w-full sm:w-auto appearance-none rounded-xl bg-gray-900/80 border border-white/10 px-4 py-2.5 pr-10 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all"
           >
             <option value="" disabled>— Pilih Exercise —</option>
-            {exercises.map((ex) => (
+            {uniqueExercises.map((ex) => (
               <option key={ex.id} value={ex.id}>
                 {ex.name}
               </option>
@@ -238,9 +255,9 @@ export default function ProgressPage() {
       {/* Content area */}
       {!selectedId ? (
         <EmptyExerciseState />
-      ) : entries.length === 0 ? (
+      ) : chartData.length === 0 ? (
         <NoDataState name={selectedExercise?.name ?? ""} />
-      ) : entries.length < 2 ? (
+      ) : chartData.length < 2 ? (
         <NotEnoughDataState name={selectedExercise?.name ?? ""} />
       ) : (
         <div className="space-y-6">

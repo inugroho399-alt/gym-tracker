@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Plus, NotebookPen, SearchX, Clock, MessageSquare } from "lucide-react";
-import type { Exercise, WorkoutEntry } from "@/types/workout";
-import { getExercises, getWorkoutEntries } from "@/lib/storage";
+import { Plus, NotebookPen, SearchX, Clock, Dumbbell } from "lucide-react";
+import type { WorkoutSession, SplitDay } from "@/types/workout";
+import { getWorkoutSessions } from "@/lib/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -18,55 +18,77 @@ function formatDate(iso: string): string {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-interface EntryCardProps {
-  entry: WorkoutEntry;
-  exerciseName: string;
-}
+function SessionCard({ session }: { session: WorkoutSession }) {
+  if (session.day === "Rest") {
+    return (
+      <article className="group rounded-2xl border border-white/5 bg-gray-900/40 p-5 flex items-center justify-between hover:bg-gray-900/60 transition-all duration-300">
+        <div className="flex items-center gap-3">
+          <div className="text-2xl">😴</div>
+          <h3 className="font-bold text-gray-300 text-lg tracking-tight">Rest Day</h3>
+        </div>
+        <time
+          dateTime={session.date}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-xs font-medium text-gray-400"
+        >
+          <Clock className="w-3.5 h-3.5" />
+          {formatDate(session.date)}
+        </time>
+      </article>
+    );
+  }
 
-function EntryCard({ entry, exerciseName }: EntryCardProps) {
   return (
     <article className="group rounded-2xl border border-white/5 bg-gray-900/40 p-5 space-y-4 hover:bg-gray-900/60 hover:border-white/10 transition-all duration-300">
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-bold text-white text-lg tracking-tight">
-          {exerciseName}
-        </h3>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-400 font-bold text-sm border border-indigo-500/30">
+            {session.day} Day
+          </span>
+        </div>
         <time
-          dateTime={entry.date}
+          dateTime={session.date}
           className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 text-xs font-medium text-gray-400 shrink-0"
         >
           <Clock className="w-3.5 h-3.5" />
-          {formatDate(entry.date)}
+          {formatDate(session.date)}
         </time>
       </div>
 
-      {/* Sets */}
-      <div className="flex flex-wrap gap-2">
-        {entry.sets.map((set, i) => (
-          <div
-            key={set.id}
-            className="flex items-center bg-gray-950/50 rounded-xl overflow-hidden border border-white/5"
-          >
-            <span className="px-2.5 py-1.5 text-xs font-bold text-gray-500 bg-white/5">
-              S{i + 1}
-            </span>
-            <div className="px-3 py-1.5 text-sm">
-              <span className="font-semibold text-white">{set.reps}</span>
-              <span className="text-gray-500 text-xs mx-1">reps</span>
-              <span className="text-gray-600">·</span>
-              <span className="font-semibold text-indigo-400 ml-1">{set.weight}kg</span>
+      {/* Exercises */}
+      <div className="space-y-4 pt-2">
+        {session.exercises.map((ex, i) => (
+          <div key={i} className="border-t border-white/5 pt-3 first:border-0 first:pt-0">
+            <h4 className="text-sm font-semibold text-gray-200 mb-2 flex items-center gap-2">
+              <Dumbbell className="w-4 h-4 text-gray-500" />
+              {ex.exerciseName}
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {ex.sets.map((set, j) => (
+                <div
+                  key={j}
+                  className="flex items-center bg-gray-950/50 rounded-xl overflow-hidden border border-white/5"
+                >
+                  <span
+                    className={`px-2.5 py-1.5 text-xs font-bold ${
+                      set.type === "PR"
+                        ? "text-amber-400 bg-amber-500/10"
+                        : "text-gray-400 bg-white/5"
+                    }`}
+                  >
+                    {set.type}
+                  </span>
+                  <div className="px-3 py-1.5 text-sm">
+                    <span className="font-semibold text-white">{set.reps}</span>
+                    <span className="text-gray-500 text-xs mx-1">x</span>
+                    <span className="font-semibold text-indigo-400 ml-1">{set.weight}kg</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
       </div>
-
-      {/* Note */}
-      {entry.note && (
-        <div className="flex items-start gap-2 pt-3 border-t border-white/5 text-sm text-gray-400">
-          <MessageSquare className="w-4 h-4 mt-0.5 opacity-50 shrink-0" />
-          <p className="leading-relaxed">{entry.note}</p>
-        </div>
-      )}
     </article>
   );
 }
@@ -100,14 +122,14 @@ function EmptyFilterState({ onReset }: { onReset: () => void }) {
     <div className="rounded-3xl border border-dashed border-white/10 bg-gray-900/20 p-10 text-center space-y-4">
       <SearchX className="w-8 h-8 text-gray-600 mx-auto" />
       <p className="text-gray-400 text-sm">
-        Tidak ada catatan untuk exercise ini.
+        Tidak ada catatan untuk split day ini.
       </p>
       <button
         type="button"
         onClick={onReset}
         className="text-indigo-400 text-sm font-medium hover:text-indigo-300 transition-colors"
       >
-        Tampilkan semua exercise →
+        Tampilkan semua sesi →
       </button>
     </div>
   );
@@ -116,37 +138,27 @@ function EmptyFilterState({ onReset }: { onReset: () => void }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const ALL_VALUE = "__all__";
+const SPLIT_DAYS: SplitDay[] = ["Push", "Pull", "Arms", "Legs", "Upper", "Lower", "Rest"];
 
 export default function HistoryPage() {
-  const [entries, setEntries] = useState<WorkoutEntry[]>([]);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [filterExerciseId, setFilterExerciseId] = useState<string>(ALL_VALUE);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
+  const [filterDay, setFilterDay] = useState<string>(ALL_VALUE);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setEntries(getWorkoutEntries());
-    setExercises(getExercises());
+    setSessions(getWorkoutSessions());
     setMounted(true);
   }, []);
 
-  const exerciseMap = useMemo<Map<string, string>>(() => {
-    return new Map(exercises.map((ex) => [ex.id, ex.name]));
-  }, [exercises]);
-
-  const exercisesWithEntries = useMemo<Exercise[]>(() => {
-    const usedIds = new Set(entries.map((e) => e.exerciseId));
-    return exercises.filter((ex) => usedIds.has(ex.id));
-  }, [entries, exercises]);
-
-  const filteredEntries = useMemo<WorkoutEntry[]>(() => {
-    if (filterExerciseId === ALL_VALUE) return entries;
-    return entries.filter((e) => e.exerciseId === filterExerciseId);
-  }, [entries, filterExerciseId]);
+  const filteredSessions = useMemo<WorkoutSession[]>(() => {
+    if (filterDay === ALL_VALUE) return sessions;
+    return sessions.filter((s) => s.day === filterDay);
+  }, [sessions, filterDay]);
 
   if (!mounted) return null;
 
-  const hasAnyEntries = entries.length > 0;
-  const hasFilteredResults = filteredEntries.length > 0;
+  const hasAnySessions = sessions.length > 0;
+  const hasFilteredResults = filteredSessions.length > 0;
 
   return (
     <div className="space-y-8">
@@ -155,23 +167,23 @@ export default function HistoryPage() {
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Riwayat Sesi</h1>
           <p className="text-gray-400 text-sm">
-            {hasAnyEntries
-              ? `${entries.length} sesi latihan tercatat.`
+            {hasAnySessions
+              ? `${sessions.length} sesi latihan tercatat.`
               : "Pantau sejarah perjuanganmu."}
           </p>
         </div>
 
-        {hasAnyEntries && (
+        {hasAnySessions && (
           <div className="relative">
             <select
-              value={filterExerciseId}
-              onChange={(e) => setFilterExerciseId(e.target.value)}
+              value={filterDay}
+              onChange={(e) => setFilterDay(e.target.value)}
               className="w-full sm:w-auto appearance-none rounded-xl bg-gray-900/80 border border-white/10 px-4 py-2.5 pr-10 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent backdrop-blur-sm transition-all"
             >
-              <option value={ALL_VALUE}>Semua Exercise</option>
-              {exercisesWithEntries.map((ex) => (
-                <option key={ex.id} value={ex.id}>
-                  {ex.name}
+              <option value={ALL_VALUE}>Semua Split Day</option>
+              {SPLIT_DAYS.map((day) => (
+                <option key={day} value={day}>
+                  {day} Day
                 </option>
               ))}
             </select>
@@ -183,25 +195,19 @@ export default function HistoryPage() {
       </div>
 
       {/* Content area */}
-      {!hasAnyEntries ? (
+      {!hasAnySessions ? (
         <EmptyState />
       ) : !hasFilteredResults ? (
-        <EmptyFilterState onReset={() => setFilterExerciseId(ALL_VALUE)} />
+        <EmptyFilterState onReset={() => setFilterDay(ALL_VALUE)} />
       ) : (
-        <div className="grid gap-4" id="entry-list">
-          {filteredEntries.map((entry) => (
-            <EntryCard
-              key={entry.id}
-              entry={entry}
-              exerciseName={
-                exerciseMap.get(entry.exerciseId) ?? "Exercise tidak dikenal"
-              }
-            />
+        <div className="grid gap-4" id="session-list">
+          {filteredSessions.map((session) => (
+            <SessionCard key={session.id} session={session} />
           ))}
         </div>
       )}
 
-      {hasAnyEntries && (
+      {hasAnySessions && (
         <div className="pt-4 pb-10">
           <Link
             href="/add"

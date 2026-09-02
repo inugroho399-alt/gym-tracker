@@ -3,13 +3,13 @@
  * Type-safe localStorage helpers for the Gym Progress Tracker.
  */
 
-import type { Exercise, WorkoutEntry, WorkoutSet, WorkoutSession, SplitDay } from "@/types/workout";
+import type { Exercise, WorkoutSession, SessionSet, SplitDay } from "@/types/workout";
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
 
 const KEYS = {
   EXERCISES: "gym-tracker-exercises",
-  SEEDED: "gym-tracker-seeded-v3", // version bump for force seed
+  SEEDED: "gym-tracker-seeded-v3",
   SESSIONS: "gym-tracker-sessions",
 } as const;
 
@@ -52,11 +52,7 @@ const DEFAULT_EXERCISES: Exercise[] = [
   { id: "ex-sit-up", name: "Sit Up" },
 ];
 
-function createSet(reps: number, weight: number): WorkoutSet {
-  return { id: `set-${Math.random().toString(36).substr(2, 9)}`, reps, weight };
-}
 
-const DEFAULT_ENTRIES: WorkoutEntry[] = [];
 
 // ─── Low-level primitives ─────────────────────────────────────────────────────
 
@@ -90,7 +86,6 @@ function ensureSeeded() {
   const isSeeded = localStorage.getItem(KEYS.SEEDED);
   if (!isSeeded) {
     writeJSON(KEYS.EXERCISES, DEFAULT_EXERCISES);
-    writeJSON(KEYS.ENTRIES, DEFAULT_ENTRIES);
     localStorage.setItem(KEYS.SEEDED, "true");
   }
 }
@@ -119,32 +114,7 @@ export function addExercise(name: string): Exercise {
   return newExercise;
 }
 
-// ─── Workout entry helpers ────────────────────────────────────────────────────
 
-export function getWorkoutEntries(): WorkoutEntry[] {
-  ensureSeeded();
-  const stored = readJSON<WorkoutEntry[]>(KEYS.ENTRIES);
-  if (!stored) return [];
-  return [...stored].sort((a, b) => (a.date < b.date ? 1 : -1));
-}
-
-export function addWorkoutEntry(entry: WorkoutEntry): void {
-  ensureSeeded();
-  const existing = readJSON<WorkoutEntry[]>(KEYS.ENTRIES) ?? [];
-  writeJSON(KEYS.ENTRIES, [entry, ...existing]);
-}
-
-export function getLastEntryForExercise(exerciseId: string): WorkoutEntry | null {
-  const all = getWorkoutEntries();
-  return all.find((e) => e.exerciseId === exerciseId) ?? null;
-}
-
-export function getEntriesForExercise(exerciseId: string): WorkoutEntry[] {
-  const all = readJSON<WorkoutEntry[]>(KEYS.ENTRIES) ?? [];
-  return all
-    .filter((e) => e.exerciseId === exerciseId)
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
-}
 
 // ─── Workout session helpers ──────────────────────────────────────────────────
 
@@ -162,4 +132,13 @@ export function addWorkoutSession(session: WorkoutSession): void {
 export function getLastSessionForDay(day: SplitDay): WorkoutSession | null {
   const all = getWorkoutSessions();
   return all.find((s) => s.day === day) ?? null;
+}
+
+export function getLastSetsForExercise(exerciseId: string): SessionSet[] | null {
+  const all = getWorkoutSessions();
+  for (const session of all) {
+    const foundEx = session.exercises.find((ex) => ex.exerciseId === exerciseId);
+    if (foundEx) return foundEx.sets;
+  }
+  return null;
 }

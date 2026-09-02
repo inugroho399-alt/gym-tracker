@@ -9,18 +9,23 @@ export interface Exercise {
   name: string;
 }
 
-/** A single set within a workout entry (reps × weight). */
-export interface WorkoutSet {
-  id: string;
-  reps: number;
-  weight: number; // in kg
+// Removed WorkoutSet and WorkoutEntry
+
+export type SplitDay = 'Push' | 'Pull' | 'Arms' | 'Legs' | 'Rest' | 'Upper' | 'Lower';
+
+export interface SetPlan {
+  type: 'PR' | 'Normal';
+  count: number;
 }
 
-/** A full workout entry: one exercise performed on a given date with one or more sets. */
-export interface WorkoutEntry {
+export interface TemplateExercise {
   id: string;
-  date: string;        // ISO 8601, e.g. "2026-09-01T10:00:00.000Z"
-  exerciseId: string;  // references Exercise.id
-  sets: WorkoutSet[];
-  note?: string;
+  name: string;
+  setPlans: SetPlan[];
+  defaultWeights: number[];
+}
+
+export interface WorkoutTemplate {
+  day: SplitDay;
+  exercises: TemplateExercise[];
 }

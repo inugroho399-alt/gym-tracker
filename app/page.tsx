@@ -4,24 +4,32 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Plus, History, TrendingUp, Target, Activity, Flame } from "lucide-react";
-import { getWorkoutEntries } from "@/lib/storage";
-import type { WorkoutEntry } from "@/types/workout";
+import { getWorkoutSessions } from "@/lib/storage";
+import type { WorkoutSession } from "@/types/workout";
 
 export default function HomePage() {
-  const [entries, setEntries] = useState<WorkoutEntry[]>([]);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setEntries(getWorkoutEntries());
+    setSessions(getWorkoutSessions());
     setMounted(true);
   }, []);
 
   // Compute stats
-  const totalWorkouts = entries.length;
-  const totalVolume = entries.reduce((sum, entry) => {
-    return sum + entry.sets.reduce((setSum, set) => setSum + set.reps * set.weight, 0);
-  }, 0);
-  const totalSets = entries.reduce((sum, entry) => sum + entry.sets.length, 0);
+  const totalWorkouts = sessions.length;
+  
+  let totalVolume = 0;
+  let totalSets = 0;
+  
+  sessions.forEach(session => {
+    session.exercises.forEach(ex => {
+      totalSets += ex.sets.length;
+      ex.sets.forEach(set => {
+        totalVolume += set.reps * set.weight;
+      });
+    });
+  });
 
   const stats = [
     { label: "Total Sesi", value: totalWorkouts, icon: Activity, color: "text-blue-400", bg: "bg-blue-500/10" },
