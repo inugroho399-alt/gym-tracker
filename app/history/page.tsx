@@ -181,6 +181,25 @@ function EmptyFilterState({ onReset }: { onReset: () => void }) {
   );
 }
 
+function HistorySkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-zinc-800/80 pb-4">
+        <div className="space-y-2">
+          <div className="h-6 w-32 bg-zinc-800 rounded"></div>
+          <div className="h-4 w-48 bg-zinc-800/50 rounded"></div>
+        </div>
+        <div className="h-11 w-40 bg-zinc-800 rounded-lg"></div>
+      </div>
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 w-full bg-zinc-800/30 border border-zinc-800 rounded-xl"></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 const ALL_VALUE = "__all__";
@@ -207,7 +226,7 @@ export default function HistoryPage() {
     return filteredSessions.slice(0, displayLimit);
   }, [filteredSessions, displayLimit]);
 
-  if (!mounted) return null;
+  if (!mounted) return <HistorySkeleton />;
 
   const hasAnySessions = sessions.length > 0;
   const hasFilteredResults = filteredSessions.length > 0;
@@ -233,7 +252,7 @@ export default function HistoryPage() {
                 setFilterDay(e.target.value);
                 setDisplayLimit(INITIAL_LIMIT);
               }}
-              className="w-full sm:w-auto appearance-none rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 pr-9 text-zinc-100 text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full sm:w-auto min-h-[44px] appearance-none rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 pr-9 text-zinc-100 text-sm font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
             >
               <option value={ALL_VALUE}>Semua Split Day</option>
               {SPLIT_DAYS.map((day) => (

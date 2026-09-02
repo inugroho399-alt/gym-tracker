@@ -1,40 +1,39 @@
 # Gym Progress Tracker
 
-A personal workout tracking app built with Next.js 15 (App Router), TypeScript, and Tailwind CSS.
+Aplikasi modern untuk mencatat sesi latihan gym, memantau *progressive overload*, dan menganalisis metrik kekuatan secara berkala.
 
-## Getting Started
+## Fitur Utama
 
-Install dependencies and start the dev server:
+1. **Pilih Split Day**: Dukungan template latihan fleksibel (Push, Pull, Legs, Upper, Lower, Arms).
+2. **Catat PR & Normal Sets**: Lacak set yang bertujuan untuk *Personal Record* dan set hipertrofi biasa.
+3. **Auto-suggest Naik Beban**: Sistem pintar yang otomatis menyarankan kenaikan beban (+2.5kg atau +5kg) jika target repetisi PR telah tercapai di sesi sebelumnya.
+4. **Riwayat Terstruktur**: Lihat histori sesi latihan dengan desain *accordion* yang rapi.
+5. **Grafik Progress Interaktif**: Visualisasi tren perkembangan kekuatan (max weight & total volume) dari waktu ke waktu menggunakan grafik interaktif.
+6. **PWA Ready**: Bisa di-install langsung ke *homescreen* HP seperti aplikasi *native* pada umumnya untuk akses cepat secara *offline*.
 
-```bash
-npm install
-npm run dev
-```
+## Teknologi
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+- Next.js 14 (App Router)
+- React (Client Components)
+- Tailwind CSS (Sistem warna kustom Emerald & Zinc)
+- Lucide Icons
+- Recharts (untuk visualisasi progres)
+- LocalStorage (Persistensi state)
 
-## Project Structure
+## Cara Menjalankan Secara Lokal
 
-```
-gym-tracker/
-├── app/                  # Next.js App Router pages
-│   ├── layout.tsx        # Root layout with Header
-│   ├── page.tsx          # Home / dashboard page
-│   └── globals.css       # Global styles (Tailwind import)
-├── components/           # Reusable UI components
-│   └── Header.tsx        # Sticky navigation header
-├── lib/                  # Helper functions & business logic
-│   └── storage.ts        # Type-safe localStorage utilities
-├── types/                # TypeScript type definitions
-│   └── index.ts          # Shared types (WorkoutSession, Exercise, etc.)
-├── next.config.ts
-├── tsconfig.json
-└── package.json
-```
+1. Pastikan Anda memiliki Node.js terinstal.
+2. Clone atau masuk ke direktori proyek ini.
+3. Instal semua dependensi:
+   ```bash
+   npm install
+   ```
+4. Jalankan server *development*:
+   ```bash
+   npm run dev
+   ```
+5. Buka `http://localhost:3000` di browser Anda.
 
-## Tech Stack
+---
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **Storage**: localStorage (via `lib/storage.ts`)
+*Catatan: Karena aplikasi menggunakan `localStorage` sebagai sumber data utamanya saat ini, seluruh riwayat latihan tersimpan secara aman di dalam browser perangkat Anda.*

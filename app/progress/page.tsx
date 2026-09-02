@@ -151,7 +151,45 @@ function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) 
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+function NoDataState() {
+  return (
+    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-10 text-center space-y-4">
+      <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mx-auto text-zinc-500">
+        <BarChart2 className="w-6 h-6" />
+      </div>
+      <div className="space-y-1">
+        <p className="text-base text-zinc-100 font-bold">Belum ada data latihan</p>
+        <p className="text-zinc-500 text-xs max-w-xs mx-auto">
+          Kamu belum mencatat sesi latihan apa pun. Catat latihan pertamamu untuk mulai melacak progress!
+        </p>
+      </div>
+      <Link
+        href="/add"
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 mt-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-all active:scale-[0.98]"
+      >
+        <Plus className="w-4 h-4 stroke-[2.5]" />
+        <span>Mulai Latihan</span>
+      </Link>
+    </div>
+  );
+}
+
+function ProgressSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-zinc-800/80 pb-4">
+        <div className="space-y-2">
+          <div className="h-6 w-40 bg-zinc-800 rounded"></div>
+          <div className="h-4 w-64 bg-zinc-800/50 rounded"></div>
+        </div>
+        <div className="h-9 w-40 bg-zinc-800 rounded-lg"></div>
+      </div>
+      <div className="h-[200px] w-full bg-zinc-800/30 border border-zinc-800 border-dashed rounded-xl flex items-center justify-center">
+        <p className="text-zinc-600 text-sm font-medium">Memuat data...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function ProgressPage() {
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -194,7 +232,7 @@ export default function ProgressPage() {
 
   const metricConfig = METRICS.find((m) => m.value === metric)!;
 
-  if (!mounted) return null;
+  if (!mounted) return <ProgressSkeleton />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -212,7 +250,7 @@ export default function ProgressPage() {
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full sm:w-auto appearance-none rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 pr-9 text-zinc-100 text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full sm:w-auto appearance-none min-h-[44px] rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 pr-9 text-zinc-100 text-sm font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
             >
               <option value="" disabled>— Pilih Exercise —</option>
               {uniqueExercises.map((ex) => (
@@ -227,7 +265,9 @@ export default function ProgressPage() {
       </div>
 
       {/* Content area */}
-      {!selectedId ? (
+      {uniqueExercises.length === 0 ? (
+        <NoDataState />
+      ) : !selectedId ? (
         <EmptyExerciseState />
       ) : chartData.length < 2 ? (
         <NotEnoughDataState name={selectedExercise?.name ?? ""} />

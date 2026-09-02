@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import SplitDayFlow from "@/components/SplitDayFlow";
 
 export const metadata: Metadata = {
-  title: "Mulai Latihan — Gym Progress Tracker",
+  title: "Tambah Latihan - Gym Tracker",
   description: "Catat sesi latihan gym baru kamu hari ini.",
 };
 

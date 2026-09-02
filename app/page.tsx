@@ -36,7 +36,30 @@ export default function HomePage() {
     { label: "Total Set", value: totalSets, icon: Target, color: "text-emerald-400" },
   ];
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="space-y-8 animate-pulse">
+        <div className="space-y-3 pt-2">
+          <div className="h-6 w-48 bg-zinc-800 rounded-lg"></div>
+          <div className="h-10 w-64 bg-zinc-800 rounded-lg"></div>
+          <div className="h-4 w-full max-w-sm bg-zinc-800/50 rounded mt-2"></div>
+          <div className="h-4 w-64 bg-zinc-800/50 rounded"></div>
+        </div>
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-24 rounded-xl bg-zinc-800/30 border border-zinc-800"></div>
+          ))}
+        </div>
+        <div className="space-y-4 pt-2">
+          <div className="h-[56px] w-full rounded-xl bg-zinc-800/80"></div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="h-[74px] rounded-xl bg-zinc-800/30 border border-zinc-800"></div>
+            <div className="h-[74px] rounded-xl bg-zinc-800/30 border border-zinc-800"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
