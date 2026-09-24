@@ -9,12 +9,10 @@ import {
   Footprints, 
   Activity, 
   Moon, 
-  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   Check,
   TrendingUp,
-  Plus,
-  Minus,
-  CheckCircle2,
   AlertCircle
 } from "lucide-react";
 import { SplitDay, SessionExercise, SessionSet, WorkoutSession } from "@/types/workout";
@@ -26,18 +24,18 @@ interface SplitOption {
   day: SplitDay;
   label: string;
   focus: string;
-  badge: string;
   icon: any;
+  color: string;
 }
 
 const SPLIT_DAYS: SplitOption[] = [
-  { day: "Push", label: "Push Day", focus: "Dada, Bahu Depan/Samping & Triceps", badge: "CHEST & TRICEPS", icon: Flame },
-  { day: "Pull", label: "Pull Day", focus: "Punggung, Biceps & Rear Delts", badge: "BACK & BICEPS", icon: Zap },
-  { day: "Arms", label: "Arms Day", focus: "Bahu, Triceps & Biceps Isolasi", badge: "SHOULDERS & ARMS", icon: Dumbbell },
-  { day: "Legs", label: "Legs Day", focus: "Quads, Hamstrings & Betis", badge: "QUADS & HAMS", icon: Footprints },
-  { day: "Upper", label: "Upper Body", focus: "Dada, Punggung, Bahu & Lengan", badge: "FULL UPPER", icon: Activity },
-  { day: "Lower", label: "Lower Body", focus: "Kaki Bawah, Panggul & Abs", badge: "LOWER & CORE", icon: Footprints },
-  { day: "Rest", label: "Rest Day", focus: "Pemulihan Otot, Sendi & Nutrisi", badge: "RECOVERY", icon: Moon },
+  { day: "Push", label: "Push Day", focus: "Dada, Bahu Depan/Samping & Triceps", icon: Flame, color: "text-orange-400 bg-orange-400/10" },
+  { day: "Pull", label: "Pull Day", focus: "Punggung, Biceps & Rear Delts", icon: Zap, color: "text-ios-blue bg-ios-blue/10" },
+  { day: "Arms", label: "Arms Day", focus: "Bahu, Triceps & Biceps Isolasi", icon: Dumbbell, color: "text-purple-400 bg-purple-400/10" },
+  { day: "Legs", label: "Legs Day", focus: "Quads, Hamstrings & Betis", icon: Footprints, color: "text-ios-green bg-ios-green/10" },
+  { day: "Upper", label: "Upper Body", focus: "Dada, Punggung, Bahu & Lengan", icon: Activity, color: "text-cyan-400 bg-cyan-400/10" },
+  { day: "Lower", label: "Lower Body", focus: "Kaki Bawah, Panggul & Perut", icon: Footprints, color: "text-amber-400 bg-amber-400/10" },
+  { day: "Rest", label: "Rest Day", focus: "Pemulihan Otot, Sendi & Nutrisi", icon: Moon, color: "text-ios-muted bg-ios-elevated" },
 ];
 
 type UISessionSet = SessionSet & {
@@ -93,12 +91,12 @@ export default function SplitDayFlow() {
             
             if (plan.type === "PR" && lastSet.reps >= 12) {
               if (lastSet.weight === 0) {
-                prMessage = "Target 12 reps tercapai. Coba tambah repetisi!";
+                prMessage = "Target 12 repetisi tercapai di sesi sebelumnya! Coba tambah repetisi.";
                 defaultWeight = 0;
               } else {
                 const increment = lastSet.weight < 20 ? 2.5 : 5;
                 defaultWeight = lastSet.weight + increment;
-                prMessage = `Overload tercapai: target 12 reps tembus. Beban dinaikkan +${increment}kg (sebelumnya ${lastSet.weight}kg).`;
+                prMessage = `Target 12 reps tercapai! Beban naik +${increment} kg (sebelumnya ${lastSet.weight} kg).`;
               }
             } else {
               defaultWeight = lastSet.weight;
@@ -131,28 +129,8 @@ export default function SplitDayFlow() {
   ) => {
     setSessionData((prev) => {
       const updatedEx = [...prev[exId]];
-      const targetVal = Math.max(0, value);
+      const targetVal = Math.max(0, isNaN(value) ? 0 : value);
       updatedEx[setIndex] = { ...updatedEx[setIndex], [field]: targetVal };
-      return { ...prev, [exId]: updatedEx };
-    });
-  };
-
-  const adjustWeight = (exId: string, setIndex: number, delta: number) => {
-    setSessionData((prev) => {
-      const current = prev[exId][setIndex].weight || 0;
-      const nextWeight = Math.max(0, parseFloat((current + delta).toFixed(1)));
-      const updatedEx = [...prev[exId]];
-      updatedEx[setIndex] = { ...updatedEx[setIndex], weight: nextWeight };
-      return { ...prev, [exId]: updatedEx };
-    });
-  };
-
-  const adjustReps = (exId: string, setIndex: number, delta: number) => {
-    setSessionData((prev) => {
-      const current = prev[exId][setIndex].reps || 0;
-      const nextReps = Math.max(0, current + delta);
-      const updatedEx = [...prev[exId]];
-      updatedEx[setIndex] = { ...updatedEx[setIndex], reps: nextReps };
       return { ...prev, [exId]: updatedEx };
     });
   };
@@ -160,9 +138,12 @@ export default function SplitDayFlow() {
   const toggleSetComplete = (exId: string, setIndex: number) => {
     setSessionData((prev) => {
       const updatedEx = [...prev[exId]];
+      const current = updatedEx[setIndex];
+      const nextCompleted = !current.completed;
+      
       updatedEx[setIndex] = {
-        ...updatedEx[setIndex],
-        completed: !updatedEx[setIndex].completed,
+        ...current,
+        completed: nextCompleted,
       };
       return { ...prev, [exId]: updatedEx };
     });
@@ -180,7 +161,7 @@ export default function SplitDayFlow() {
 
       for (let i = 0; i < sets.length; i++) {
         if (!sets[i].reps || sets[i].reps <= 0) {
-          setSaveError(`Harap isi jumlah repetisi untuk Set #${i + 1} pada "${ex.name}"`);
+          setSaveError(`Mohon isi repetisi untuk Set #${i + 1} di "${ex.name}"`);
           return;
         }
         cleanSets.push({
@@ -216,7 +197,7 @@ export default function SplitDayFlow() {
     Object.values(sessionData).forEach((sets) => {
       sets.forEach((s) => {
         total++;
-        if (s.completed || (s.reps > 0 && s.weight > 0)) {
+        if (s.completed) {
           completed++;
         }
         volume += (s.reps || 0) * (s.weight || 0);
@@ -230,51 +211,41 @@ export default function SplitDayFlow() {
   if (!selectedDay) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
-            PILIH JADWAL LATIHAN
-          </span>
-          <span className="text-[11px] font-mono text-carbon-500">
-            7 PILIHAN TERSEDIA
-          </span>
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">
+            Pilih Jadwal Latihan
+          </h2>
+          <p className="text-ios-muted text-sm mt-0.5">
+            Pilih program latihan yang ingin kamu jalankan hari ini.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="bg-ios-card rounded-2xl border border-ios-border/60 divide-y divide-ios-border/60 overflow-hidden shadow-sm">
           {SPLIT_DAYS.map((item) => {
             const Icon = item.icon;
-            const isRest = item.day === "Rest";
 
             return (
               <button
                 key={item.day}
                 onClick={() => handleSelectDay(item.day)}
-                className={`p-4 rounded-xl border text-left transition-all active:scale-[0.99] flex items-start gap-3.5 group ${
-                  isRest
-                    ? "bg-carbon-900/60 border-carbon-800 hover:border-slate-600 hover:bg-carbon-850"
-                    : "bg-carbon-900 border-carbon-800 hover:border-volt-500/50 hover:bg-carbon-850"
-                }`}
+                className="w-full p-4 text-left transition-colors hover:bg-ios-cardHover active:bg-ios-elevated flex items-center justify-between gap-3 group"
               >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
-                  isRest
-                    ? "bg-carbon-800 border-carbon-700 text-slate-400 group-hover:text-slate-200"
-                    : "bg-carbon-800 border-carbon-700 text-volt-400 group-hover:bg-volt-500 group-hover:text-carbon-950 group-hover:border-volt-400"
-                }`}>
-                  <Icon className="w-5 h-5 stroke-[2.2]" />
-                </div>
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-extrabold text-sm text-white tracking-wide uppercase">
+                  <div className="min-w-0">
+                    <span className="font-semibold text-white text-base block">
                       {item.label}
                     </span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-slate-300">
-                      {item.badge}
-                    </span>
+                    <p className="text-xs text-ios-muted truncate mt-0.5">
+                      {item.focus}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-400 mt-1 leading-snug">
-                    {item.focus}
-                  </p>
                 </div>
+
+                <ChevronRight className="w-4 h-4 text-ios-muted shrink-0 group-hover:text-white transition-colors" />
               </button>
             );
           })}
@@ -285,51 +256,59 @@ export default function SplitDayFlow() {
 
   // STAGE 2: Workout Logging Grid
   const template = getTemplateForDay(selectedDay);
+  const progressPercent = totalSetsCount > 0 ? Math.round((completedSetsCount / totalSetsCount) * 100) : 0;
 
   return (
     <>
       <div className="space-y-5 pb-32 animate-fade-in">
-        {/* Sticky Split Header & Progress Bar */}
-        <div className="rounded-xl border border-carbon-750 bg-carbon-900 p-4 shadow-lg space-y-3">
+        {/* Top Session Status Card */}
+        <div className="rounded-2xl border border-ios-border/60 bg-ios-card p-4 sm:p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="px-2 py-0.5 rounded bg-volt-500 text-carbon-950 text-xs font-mono font-black uppercase tracking-wider">
-                {selectedDay}
+              <span className="px-3 py-1 rounded-full bg-ios-blue/15 text-ios-blue text-xs font-semibold">
+                {selectedDay} Day
               </span>
-              <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight uppercase">
-                {template.exercises.length} Gerakan Terprogram
-              </h2>
+              <span className="text-sm text-ios-muted">
+                {template.exercises.length} gerakan
+              </span>
             </div>
 
             <button
               onClick={() => setSelectedDay(null)}
-              className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-slate-400 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium text-ios-blue hover:text-ios-blue/80 transition-colors"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
               <span>Ganti Split</span>
             </button>
           </div>
 
-          {/* Metric Bar */}
-          <div className="flex items-center justify-between pt-2 border-t border-carbon-800 text-xs font-mono">
-            <span className="text-slate-400">
-              Set Selesai:{" "}
-              <strong className="text-volt-400">
-                {completedSetsCount}/{totalSetsCount}
-              </strong>
-            </span>
-            <span className="text-slate-400">
-              Volume Sesi:{" "}
-              <strong className="text-white">
-                {currentVolume.toLocaleString("id-ID")} kg
-              </strong>
+          {/* Progress bar & Stats */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-ios-muted">
+              <span>Progres Sesi</span>
+              <span className="font-medium text-white">
+                {completedSetsCount} dari {totalSetsCount} set ({progressPercent}%)
+              </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-ios-elevated overflow-hidden">
+              <div 
+                className="h-full bg-ios-green rounded-full transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1 border-t border-ios-border/60 text-xs text-ios-muted">
+            <span>Total Volume Terkumpul</span>
+            <span className="font-semibold text-white">
+              {currentVolume.toLocaleString("id-ID")} kg
             </span>
           </div>
         </div>
 
         {/* Validation error notification */}
         {saveError && (
-          <div className="p-3.5 rounded-lg border border-red-500/30 bg-red-950/40 text-red-300 text-xs font-medium flex items-center gap-2">
+          <div className="p-3.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-300 text-xs font-medium flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
             <span>{saveError}</span>
           </div>
@@ -339,159 +318,115 @@ export default function SplitDayFlow() {
         <div className="space-y-4">
           {template.exercises.map((ex, exIndex) => {
             const sets = sessionData[ex.id] || [];
-            const exIndexPadded = (exIndex + 1).toString().padStart(2, "0");
+            const completedCount = sets.filter((s) => s.completed).length;
 
             return (
               <div 
                 key={ex.id} 
-                className="bg-carbon-900 border border-carbon-800 rounded-xl overflow-hidden shadow-sm"
+                className="bg-ios-card border border-ios-border/60 rounded-2xl overflow-hidden shadow-sm"
               >
                 {/* Exercise Header */}
-                <div className="px-4 py-3 bg-carbon-850 border-b border-carbon-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono text-xs font-bold text-volt-400 px-1.5 py-0.5 rounded bg-carbon-900 border border-carbon-750">
-                      {exIndexPadded}
+                <div className="px-4 py-3.5 bg-ios-card border-b border-ios-border/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-6 h-6 rounded-full bg-ios-elevated text-ios-muted text-xs font-medium flex items-center justify-center shrink-0">
+                      {exIndex + 1}
                     </span>
-                    <h3 className="font-bold text-white text-sm sm:text-base tracking-tight">
+                    <h3 className="font-semibold text-white text-base truncate">
                       {ex.name}
                     </h3>
                   </div>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {sets.length} SET
+                  <span className="text-xs text-ios-muted shrink-0">
+                    {completedCount}/{sets.length} Selesai
                   </span>
                 </div>
 
                 <div className="p-4 space-y-3">
+                  {/* Table Column Labels */}
+                  <div className="grid grid-cols-12 gap-2 px-1 text-[11px] font-medium text-ios-muted">
+                    <span className="col-span-2">SET</span>
+                    <span className="col-span-4 text-center">BEBAN (KG)</span>
+                    <span className="col-span-4 text-center">REPETISI</span>
+                    <span className="col-span-2 text-center">SELESAI</span>
+                  </div>
+
                   {sets.map((set, i) => {
                     const isPR = set.type === "PR";
                     const isDone = set.completed;
 
                     return (
                       <div key={i} className="space-y-1.5">
-                        {/* Progressive overload insight alert */}
+                        {/* Progressive Overload Notice */}
                         {set.prMessage && (
-                          <div className="flex items-start gap-2 text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-2 rounded-lg">
+                          <div className="flex items-start gap-2 text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl">
                             <TrendingUp className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
                             <span>{set.prMessage}</span>
                           </div>
                         )}
 
-                        {/* Set Row Item */}
+                        {/* Set Row */}
                         <div
-                          className={`p-2.5 rounded-lg border transition-all flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 ${
+                          className={`p-2 rounded-xl border transition-all grid grid-cols-12 gap-2 items-center ${
                             isDone
-                              ? "bg-carbon-850/80 border-volt-500/40"
-                              : "bg-carbon-950 border-carbon-800"
+                              ? "bg-ios-green/5 border-ios-green/20"
+                              : "bg-ios-elevated/40 border-ios-border/40"
                           }`}
                         >
-                          {/* Set badge */}
-                          <div className="flex items-center gap-1.5 min-w-[72px]">
-                            <span className="font-mono text-xs font-bold text-slate-400">
+                          {/* Set label */}
+                          <div className="col-span-2 flex items-center gap-1.5 pl-1">
+                            <span className="text-xs font-semibold text-white">
                               #{i + 1}
                             </span>
-                            <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border uppercase ${
-                                isPR
-                                  ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
-                                  : "bg-carbon-800 border-carbon-700 text-slate-400"
+                            {isPR && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-amber-500/15 text-amber-400">
+                                PR
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Weight Input */}
+                          <div className="col-span-4">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={set.weight === 0 && set.type === "Normal" && ex.defaultWeights[0] === 0 ? "" : set.weight}
+                              onChange={(e) =>
+                                handleSetChange(ex.id, i, "weight", parseFloat(e.target.value))
+                              }
+                              placeholder="0"
+                              className="w-full text-center bg-ios-card border border-ios-border rounded-lg py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-ios-blue transition-colors"
+                            />
+                          </div>
+
+                          {/* Reps Input */}
+                          <div className="col-span-4">
+                            <input
+                              type="number"
+                              min="0"
+                              value={set.reps || ""}
+                              onChange={(e) =>
+                                handleSetChange(ex.id, i, "reps", parseInt(e.target.value, 10))
+                              }
+                              placeholder="0"
+                              className="w-full text-center bg-ios-card border border-ios-border rounded-lg py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-ios-blue transition-colors"
+                            />
+                          </div>
+
+                          {/* Completed Circle Toggle */}
+                          <div className="col-span-2 flex justify-center">
+                            <button
+                              type="button"
+                              onClick={() => toggleSetComplete(ex.id, i)}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                                isDone
+                                  ? "bg-ios-green text-black shadow-sm"
+                                  : "border border-ios-separator text-transparent hover:border-ios-green hover:text-ios-green/50"
                               }`}
+                              title="Tandai selesai"
                             >
-                              {isPR ? "PR SET" : "VOL"}
-                            </span>
-                          </div>
-
-                          {/* Weight control with quick steppers */}
-                          <div className="flex-1 flex items-center bg-carbon-900 border border-carbon-750 rounded-md overflow-hidden min-w-[120px]">
-                            <button
-                              type="button"
-                              onClick={() => adjustWeight(ex.id, i, -2.5)}
-                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
-                              title="Kurang 2.5 kg"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <div className="flex-1 flex items-center justify-center">
-                              <input
-                                type="number"
-                                min="0"
-                                step="0.5"
-                                value={set.weight === 0 && set.type === "Normal" && ex.defaultWeights[0] === 0 ? "" : set.weight}
-                                onChange={(e) =>
-                                  handleSetChange(ex.id, i, "weight", Number(e.target.value))
-                                }
-                                placeholder="0"
-                                className="w-full text-center bg-transparent py-1.5 text-sm font-mono font-bold text-white focus:outline-none tabular-nums"
-                              />
-                              <span className="text-[11px] font-mono text-slate-400 pr-2 pointer-events-none">
-                                kg
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => adjustWeight(ex.id, i, 2.5)}
-                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
-                              title="Tambah 2.5 kg"
-                            >
-                              <Plus className="w-3 h-3" />
+                              <Check className="w-4 h-4 stroke-[3]" />
                             </button>
                           </div>
-
-                          {/* Separator */}
-                          <span className="text-carbon-600 font-mono font-bold text-xs hidden sm:inline">
-                            ×
-                          </span>
-
-                          {/* Reps control with quick steppers */}
-                          <div className="flex-1 flex items-center bg-carbon-900 border border-carbon-750 rounded-md overflow-hidden min-w-[120px]">
-                            <button
-                              type="button"
-                              onClick={() => adjustReps(ex.id, i, -1)}
-                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
-                              title="Kurang 1 rep"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <div className="flex-1 flex items-center justify-center">
-                              <input
-                                type="number"
-                                min="0"
-                                value={set.reps || ""}
-                                onChange={(e) =>
-                                  handleSetChange(ex.id, i, "reps", Number(e.target.value))
-                                }
-                                placeholder="Reps"
-                                className="w-full text-center bg-transparent py-1.5 text-sm font-mono font-bold text-white focus:outline-none tabular-nums"
-                              />
-                              <span className="text-[11px] font-mono text-slate-400 pr-2 pointer-events-none">
-                                reps
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => adjustReps(ex.id, i, 1)}
-                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
-                              title="Tambah 1 rep"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-
-                          {/* Completed set toggle */}
-                          <button
-                            type="button"
-                            onClick={() => toggleSetComplete(ex.id, i)}
-                            className={`h-9 px-3 rounded-md flex items-center justify-center gap-1.5 text-xs font-mono font-bold transition-all ${
-                              isDone
-                                ? "bg-volt-500 text-carbon-950 shadow-sm"
-                                : "bg-carbon-800 text-slate-400 hover:text-white hover:bg-carbon-750"
-                            }`}
-                            title="Tandai set selesai"
-                          >
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            <span className="hidden sm:inline">
-                              {isDone ? "DONE" : "CEK"}
-                            </span>
-                          </button>
                         </div>
                       </div>
                     );
@@ -507,10 +442,10 @@ export default function SplitDayFlow() {
           <button
             type="button"
             onClick={handleSaveSession}
-            className="w-full bg-volt-500 hover:bg-volt-400 active:scale-[0.99] text-carbon-950 font-extrabold text-sm uppercase tracking-wider py-4 rounded-xl transition-all shadow-xl shadow-volt-500/15 flex items-center justify-center gap-2"
+            className="w-full bg-ios-blue hover:bg-ios-blue/90 active:scale-[0.99] text-white font-semibold text-sm py-4 rounded-2xl transition-all shadow-lg shadow-ios-blue/20 flex items-center justify-center gap-2"
           >
-            <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-            <span>Simpan Sesi Latihan Ini</span>
+            <Check className="w-5 h-5 stroke-[2.5]" />
+            <span>Simpan Sesi Latihan</span>
           </button>
         </div>
       </div>

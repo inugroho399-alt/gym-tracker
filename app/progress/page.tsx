@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { TrendingUp, BarChart2, Plus, Info, ChevronDown, Trophy, Activity, Target } from "lucide-react";
+import { Plus, Info, ChevronDown, Trophy, Activity, Target } from "lucide-react";
 import type { WorkoutSession } from "@/types/workout";
 import { getWorkoutSessions } from "@/lib/storage";
 
@@ -12,9 +12,9 @@ import { getWorkoutSessions } from "@/lib/storage";
 const ProgressChart = dynamic(() => import("@/components/ProgressChart"), {
   ssr: false,
   loading: () => (
-    <div className="h-[280px] flex flex-col items-center justify-center gap-2 bg-carbon-900/40 rounded-xl border border-carbon-800">
-      <div className="w-6 h-6 border-2 border-volt-400 border-t-transparent rounded-full animate-spin" />
-      <p className="text-slate-400 text-xs font-mono">Memuat kurva telemetri beban…</p>
+    <div className="h-[280px] flex flex-col items-center justify-center gap-2 bg-ios-card rounded-2xl border border-ios-border/60">
+      <div className="w-6 h-6 border-2 border-ios-blue border-t-transparent rounded-full animate-spin" />
+      <p className="text-ios-muted text-xs">Memuat grafik progres…</p>
     </div>
   ),
 });
@@ -24,7 +24,7 @@ const ProgressChart = dynamic(() => import("@/components/ProgressChart"), {
 type Metric = "maxWeight" | "totalVolume";
 
 const METRICS: { value: Metric; label: string; unit: string; description: string }[] = [
-  { value: "maxWeight", label: "Beban PR Maks", unit: "kg", description: "Beban angkatan tertinggi tiap sesi" },
+  { value: "maxWeight", label: "Beban Maks (PR)", unit: "kg", description: "Beban angkatan tertinggi tiap sesi" },
   { value: "totalVolume", label: "Total Volume", unit: "kg", description: "Akumulasi Repetisi × Beban" },
 ];
 
@@ -68,16 +68,16 @@ function buildChartData(sessions: WorkoutSession[], exerciseId: string, metric: 
 
 function EmptyExerciseState() {
   return (
-    <div className="rounded-xl border border-dashed border-carbon-800 bg-carbon-900/40 p-10 text-center space-y-4">
-      <div className="w-12 h-12 rounded-xl bg-carbon-800 border border-carbon-700 flex items-center justify-center mx-auto text-volt-400">
-        <BarChart2 className="w-6 h-6" />
+    <div className="rounded-2xl border border-ios-border/60 bg-ios-card p-10 text-center space-y-3">
+      <div className="w-12 h-12 rounded-2xl bg-ios-elevated flex items-center justify-center mx-auto text-ios-muted">
+        <Target className="w-6 h-6" />
       </div>
       <div className="space-y-1">
-        <p className="text-base text-white font-extrabold uppercase tracking-wide">
-          Pilih Gerakan Untuk Dianalisis
+        <p className="text-base text-white font-semibold">
+          Pilih Gerakan Untuk Melihat Grafik
         </p>
-        <p className="text-slate-400 text-xs max-w-xs mx-auto">
-          Pilih salah satu gerakan latihan di atas untuk memantau kurva kekuatan & progressive overload kamu.
+        <p className="text-ios-muted text-xs max-w-xs mx-auto">
+          Pilih salah satu gerakan latihan di atas untuk memantau kurva kekuatan & perkembangan bebanmu.
         </p>
       </div>
     </div>
@@ -86,30 +86,30 @@ function EmptyExerciseState() {
 
 function NotEnoughDataState({ name }: { name: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-carbon-800 bg-carbon-900/40 p-8 text-center space-y-4">
-      <div className="w-10 h-10 rounded-lg bg-carbon-800 border border-carbon-700 flex items-center justify-center mx-auto text-volt-400">
+    <div className="rounded-2xl border border-ios-border/60 bg-ios-card p-8 text-center space-y-4">
+      <div className="w-10 h-10 rounded-xl bg-ios-blue/10 text-ios-blue flex items-center justify-center mx-auto">
         <Info className="w-5 h-5" />
       </div>
       <div className="space-y-1">
-        <p className="text-base text-white font-extrabold uppercase tracking-wide">
+        <p className="text-base text-white font-semibold">
           Butuh Minimal 2 Sesi
         </p>
-        <p className="text-slate-400 text-xs max-w-sm mx-auto">
-          Baru ada 1 catatan untuk <strong className="text-slate-200">{name}</strong>. Grafik tren perkembangan akan aktif otomatis setelah kamu menyelesaikan 1 sesi lagi.
+        <p className="text-ios-muted text-xs max-w-sm mx-auto">
+          Baru ada 1 catatan latihan untuk <strong className="text-white">{name}</strong>. Grafik tren perkembangan akan aktif otomatis setelah kamu menyelesaikan 1 sesi lagi.
         </p>
       </div>
       <Link
         href="/add"
-        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-volt-500 hover:bg-volt-400 text-carbon-950 font-extrabold text-xs uppercase tracking-wider transition-all active:scale-[0.98]"
+        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-ios-blue hover:bg-ios-blue/90 text-white font-semibold text-xs transition-all shadow-md shadow-ios-blue/20"
       >
-        <Plus className="w-4 h-4 stroke-[3]" />
+        <Plus className="w-4 h-4 stroke-[2.5]" />
         <span>Catat Sesi Baru</span>
       </Link>
     </div>
   );
 }
 
-function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) {
+function StatsSummary({ data }: { data: ChartPoint[]; metric: Metric }) {
   const values = data.map((d) => d.value);
   const current = values[values.length - 1];
   const first = values[0];
@@ -118,37 +118,37 @@ function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) 
   const unit = "kg";
 
   const stats = [
-    { label: "ALL-TIME PR", value: `${peak} ${unit}`, icon: Trophy, isPeak: true },
-    { label: "TERKINI", value: `${current} ${unit}`, icon: Target },
+    { label: "Rekor Tertinggi", value: `${peak} ${unit}`, icon: Trophy, isPeak: true },
+    { label: "Sesi Terakhir", value: `${current} ${unit}`, icon: Target },
     {
-      label: "DELTA PROGRESS",
+      label: "Perkembangan",
       value: `${delta > 0 ? "+" : ""}${delta} ${unit}`,
       isDelta: true,
       deltaVal: delta,
     },
-    { label: "TOTAL SESI", value: `${data.length}×`, icon: Activity },
+    { label: "Total Sesi", value: `${data.length} sesi`, icon: Activity },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {stats.map(({ label, value, isDelta, deltaVal, isPeak }) => (
         <div
           key={label}
-          className="rounded-lg bg-carbon-900 border border-carbon-800 p-3.5 flex flex-col justify-between"
+          className="rounded-2xl bg-ios-card border border-ios-border/60 p-4 flex flex-col justify-between"
         >
-          <p className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">
+          <p className="text-xs text-ios-muted font-medium">
             {label}
           </p>
           <p
-            className={`text-lg sm:text-xl font-mono font-black tracking-tight tabular-nums mt-1 ${
+            className={`text-xl font-bold tracking-tight tabular-nums mt-1.5 ${
               isPeak
                 ? "text-amber-400"
                 : isDelta
                 ? deltaVal && deltaVal > 0
-                  ? "text-volt-400"
+                  ? "text-ios-green"
                   : deltaVal && deltaVal < 0
                   ? "text-red-400"
-                  : "text-slate-400"
+                  : "text-ios-muted"
                 : "text-white"
             }`}
           >
@@ -162,23 +162,23 @@ function StatsSummary({ data, metric }: { data: ChartPoint[]; metric: Metric }) 
 
 function NoDataState() {
   return (
-    <div className="rounded-xl border border-dashed border-carbon-800 bg-carbon-900/40 p-10 text-center space-y-4">
-      <div className="w-12 h-12 rounded-xl bg-carbon-800 border border-carbon-700 flex items-center justify-center mx-auto text-slate-500">
-        <BarChart2 className="w-6 h-6" />
+    <div className="rounded-2xl border border-ios-border/60 bg-ios-card p-10 text-center space-y-4">
+      <div className="w-12 h-12 rounded-2xl bg-ios-elevated text-ios-muted flex items-center justify-center mx-auto">
+        <Activity className="w-6 h-6" />
       </div>
       <div className="space-y-1">
-        <p className="text-base text-white font-extrabold uppercase tracking-wide">
+        <p className="text-base text-white font-semibold">
           Belum Ada Data Latihan
         </p>
-        <p className="text-slate-400 text-xs max-w-xs mx-auto">
-          Kamu belum mencatat sesi latihan apa pun. Rekam sesi pertamamu untuk mengamati pertumbuhan kurva beban.
+        <p className="text-ios-muted text-xs max-w-xs mx-auto">
+          Kamu belum mencatat sesi latihan apa pun. Rekam sesi pertamamu untuk memantau grafik perkembangan beban.
         </p>
       </div>
       <Link
         href="/add"
-        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-volt-500 hover:bg-volt-400 text-carbon-950 font-extrabold text-xs uppercase tracking-wider transition-all active:scale-[0.98]"
+        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-ios-blue hover:bg-ios-blue/90 text-white font-semibold text-xs transition-all shadow-md shadow-ios-blue/20"
       >
-        <Plus className="w-4 h-4 stroke-[3]" />
+        <Plus className="w-4 h-4 stroke-[2.5]" />
         <span>Mulai Sesi Pertama</span>
       </Link>
     </div>
@@ -228,26 +228,23 @@ export default function ProgressPage() {
   if (!mounted) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-10 bg-carbon-900 rounded-lg" />
-        <div className="h-24 bg-carbon-900 rounded-xl" />
-        <div className="h-64 bg-carbon-900 rounded-xl" />
+        <div className="h-10 bg-ios-card rounded-2xl" />
+        <div className="h-24 bg-ios-card rounded-2xl" />
+        <div className="h-64 bg-ios-card rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6 animate-fade-in pb-12">
+    <div className="space-y-6 animate-fade-in pb-16">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-volt-400">
-            PERFORMANCE METRICS
-          </span>
-          <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
-            Grafik Overload & PR
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Progres Latihan
           </h1>
-          <p className="text-slate-400 text-xs mt-0.5 font-mono">
-            Analisis tren kekuatan dan progres kenaikan beban bertahap.
+          <p className="text-ios-muted text-sm mt-0.5">
+            Pantau perkembangan beban dan total volume dari waktu ke waktu.
           </p>
         </div>
 
@@ -257,16 +254,16 @@ export default function ProgressPage() {
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full sm:w-auto appearance-none min-h-[42px] rounded-lg bg-carbon-900 border border-carbon-750 px-3.5 py-2 pr-9 text-white text-xs font-mono font-bold uppercase tracking-wider focus:outline-none focus:border-volt-500 transition-colors shadow-sm"
+              className="w-full sm:w-auto appearance-none min-h-[42px] rounded-full bg-ios-card border border-ios-border px-4 py-2 pr-9 text-white text-xs font-semibold focus:outline-none focus:border-ios-blue transition-colors shadow-sm"
             >
               <option value="" disabled>— Pilih Gerakan —</option>
               {uniqueExercises.map((ex) => (
-                <option key={ex.id} value={ex.id}>
+                <option key={ex.id} value={ex.id} className="bg-ios-card text-white">
                   {ex.name}
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+            <ChevronDown className="w-3.5 h-3.5 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-ios-muted" />
           </div>
         )}
       </div>
@@ -280,17 +277,17 @@ export default function ProgressPage() {
         <NotEnoughDataState name={selectedExercise?.name ?? ""} />
       ) : (
         <div className="space-y-4">
-          {/* Metric Segmented Switchboard */}
-          <div className="flex items-center gap-1.5 p-1 rounded-lg bg-carbon-900 border border-carbon-800 w-fit">
+          {/* Metric Segmented Control */}
+          <div className="flex items-center gap-1.5 p-1 rounded-full bg-ios-card border border-ios-border w-fit">
             {METRICS.map((m) => (
               <button
                 key={m.value}
                 type="button"
                 onClick={() => setMetric(m.value)}
-                className={`py-1.5 px-3 rounded-md text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+                className={`py-1.5 px-4 rounded-full text-xs font-semibold transition-all ${
                   metric === m.value
-                    ? "bg-volt-500 text-carbon-950 shadow-sm"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-white text-black shadow-sm"
+                    : "text-ios-muted hover:text-white"
                 }`}
               >
                 {m.label}
@@ -298,19 +295,16 @@ export default function ProgressPage() {
             ))}
           </div>
 
-          {/* Telemetry Scorecards */}
+          {/* Stats Cards */}
           <StatsSummary data={chartData} metric={metric} />
 
-          {/* Chart Board */}
-          <div className="rounded-xl border border-carbon-800 bg-carbon-900 p-4 sm:p-5 space-y-4 shadow-sm">
+          {/* Chart Card */}
+          <div className="rounded-2xl border border-ios-border/60 bg-ios-card p-4 sm:p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-volt-400" />
-                <h3 className="font-extrabold text-white text-sm sm:text-base uppercase tracking-wide">
-                  {selectedExercise?.name}
-                </h3>
-              </div>
-              <span className="text-[11px] font-mono text-slate-400">
+              <h3 className="font-semibold text-white text-base">
+                {selectedExercise?.name}
+              </h3>
+              <span className="text-xs text-ios-muted">
                 {metricConfig.description}
               </span>
             </div>
@@ -328,4 +322,3 @@ export default function ProgressPage() {
     </div>
   );
 }
-

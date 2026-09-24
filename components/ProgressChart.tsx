@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import type { ChartPoint } from "@/app/progress/page";
 
-// ─── Custom Precision Telemetry Tooltip ───────────────────────────────────────
+// ─── Apple Health Style Tooltip ──────────────────────────────────────────────
 
 interface TooltipPayloadItem {
   value: number;
@@ -32,15 +32,15 @@ function CustomTooltip({ active, payload, label, unit }: CustomTooltipProps) {
   const val = payload[0].value;
 
   return (
-    <div className="rounded-lg border border-carbon-700 bg-carbon-900/95 backdrop-blur-md px-3.5 py-2.5 shadow-2xl font-mono text-xs">
-      <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-1 font-bold">
+    <div className="rounded-xl border border-ios-border bg-ios-card/95 backdrop-blur-xl px-3.5 py-2.5 shadow-2xl">
+      <p className="text-ios-muted text-[11px] mb-1 font-medium">
         {label}
       </p>
       <div className="flex items-baseline gap-1.5">
-        <span className="text-lg font-black text-white tabular-nums">
+        <span className="text-xl font-bold text-white tabular-nums">
           {val.toLocaleString("id-ID")}
         </span>
-        <span className="text-volt-400 font-extrabold text-xs uppercase">
+        <span className="text-ios-blue font-semibold text-xs">
           {unit}
         </span>
       </div>
@@ -48,13 +48,13 @@ function CustomTooltip({ active, payload, label, unit }: CustomTooltipProps) {
   );
 }
 
-// ─── Custom Active & Peak Dots ────────────────────────────────────────────────
+// ─── Active Dot ──────────────────────────────────────────────────────────────
 
 function CustomActiveDot({ cx = 0, cy = 0 }: { cx?: number; cy?: number }) {
   return (
     <g>
-      <circle cx={cx} cy={cy} r={7} fill="#ccff00" opacity={0.25} />
-      <circle cx={cx} cy={cy} r={4.5} fill="#ccff00" stroke="#090a0e" strokeWidth={2} />
+      <circle cx={cx} cy={cy} r={8} fill="#0a84ff" opacity={0.25} />
+      <circle cx={cx} cy={cy} r={4.5} fill="#0a84ff" stroke="#000000" strokeWidth={2} />
     </g>
   );
 }
@@ -80,40 +80,39 @@ const ProgressChart = memo(function ProgressChart({ data, unit }: ProgressChartP
         data={data}
         margin={{ top: 12, right: 12, bottom: 4, left: -16 }}
       >
-        {/* Athletic Grid */}
+        {/* Subtle Horizontal Grid */}
         <CartesianGrid
-          strokeDasharray="2 3"
-          stroke="#1c202a"
+          strokeDasharray="3 3"
+          stroke="#2c2c2e"
           vertical={false}
         />
 
         {/* Axes */}
         <XAxis
           dataKey="date"
-          tick={{ fill: "#64748b", fontSize: 11, fontFamily: "monospace" }}
+          tick={{ fill: "#8e8e93", fontSize: 12 }}
           tickLine={false}
-          axisLine={{ stroke: "#1c202a" }}
+          axisLine={{ stroke: "#2c2c2e" }}
           dy={8}
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fill: "#64748b", fontSize: 11, fontFamily: "monospace" }}
+          tick={{ fill: "#8e8e93", fontSize: 12 }}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => `${v}`}
           width={48}
         />
 
-        {/* Average line */}
+        {/* Average reference line */}
         <ReferenceLine
           y={avg}
-          stroke="#2c3342"
+          stroke="#38383a"
           strokeDasharray="4 4"
           label={{
-            value: `AVG: ${avg}${unit}`,
-            fill: "#64748b",
-            fontSize: 10,
-            fontFamily: "monospace",
+            value: `Rata-rata: ${avg} ${unit}`,
+            fill: "#8e8e93",
+            fontSize: 11,
             position: "insideTopRight",
           }}
         />
@@ -121,14 +120,14 @@ const ProgressChart = memo(function ProgressChart({ data, unit }: ProgressChartP
         {/* Tooltip */}
         <Tooltip
           content={<CustomTooltip unit={unit} />}
-          cursor={{ stroke: "#2c3342", strokeWidth: 1, strokeDasharray: "3 3" }}
+          cursor={{ stroke: "#38383a", strokeWidth: 1, strokeDasharray: "3 3" }}
         />
 
-        {/* Data line */}
+        {/* Clean iOS Blue Data Line */}
         <Line
           type="monotone"
           dataKey="value"
-          stroke="#ccff00"
+          stroke="#0a84ff"
           strokeWidth={2.5}
           dot={(props) => {
             const { cx, cy, index, payload } = props;
@@ -141,8 +140,8 @@ const ProgressChart = memo(function ProgressChart({ data, unit }: ProgressChartP
                 cx={cx}
                 cy={cy}
                 r={isPeak ? 5 : isLast ? 4 : 3}
-                fill={isPeak ? "#f59e0b" : "#ccff00"}
-                stroke="#090a0e"
+                fill={isPeak ? "#ff9f0a" : "#0a84ff"}
+                stroke="#000000"
                 strokeWidth={isPeak || isLast ? 2 : 1}
               />
             );
@@ -157,4 +156,3 @@ const ProgressChart = memo(function ProgressChart({ data, unit }: ProgressChartP
 });
 
 export default ProgressChart;
-
