@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Dumbbell, 
   Flame, 
@@ -10,29 +10,55 @@ import {
   Activity, 
   Moon, 
   ArrowLeft,
-  CheckCircle2
+  Check,
+  TrendingUp,
+  Plus,
+  Minus,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { SplitDay, SessionExercise, SessionSet, WorkoutSession } from "@/types/workout";
 import { getTemplateForDay } from "@/lib/templates";
 import { addWorkoutSession, getLastSetsForExercise } from "@/lib/storage";
 import Stopwatch from "@/components/Stopwatch";
 
-const SPLIT_DAYS: { day: SplitDay; label: string; icon: any }[] = [
-  { day: "Push", label: "Push", icon: Flame },
-  { day: "Pull", label: "Pull", icon: Zap },
-  { day: "Arms", label: "Arms", icon: Dumbbell },
-  { day: "Legs", label: "Legs", icon: Footprints },
-  { day: "Upper", label: "Upper Body", icon: Activity },
-  { day: "Lower", label: "Lower Body", icon: Footprints },
-  { day: "Rest", label: "Rest Day", icon: Moon },
+interface SplitOption {
+  day: SplitDay;
+  label: string;
+  focus: string;
+  badge: string;
+  icon: any;
+}
+
+const SPLIT_DAYS: SplitOption[] = [
+  { day: "Push", label: "Push Day", focus: "Dada, Bahu Depan/Samping & Triceps", badge: "CHEST & TRICEPS", icon: Flame },
+  { day: "Pull", label: "Pull Day", focus: "Punggung, Biceps & Rear Delts", badge: "BACK & BICEPS", icon: Zap },
+  { day: "Arms", label: "Arms Day", focus: "Bahu, Triceps & Biceps Isolasi", badge: "SHOULDERS & ARMS", icon: Dumbbell },
+  { day: "Legs", label: "Legs Day", focus: "Quads, Hamstrings & Betis", badge: "QUADS & HAMS", icon: Footprints },
+  { day: "Upper", label: "Upper Body", focus: "Dada, Punggung, Bahu & Lengan", badge: "FULL UPPER", icon: Activity },
+  { day: "Lower", label: "Lower Body", focus: "Kaki Bawah, Panggul & Abs", badge: "LOWER & CORE", icon: Footprints },
+  { day: "Rest", label: "Rest Day", focus: "Pemulihan Otot, Sendi & Nutrisi", badge: "RECOVERY", icon: Moon },
 ];
 
-type UISessionSet = SessionSet & { prMessage?: string };
+type UISessionSet = SessionSet & {
+  prMessage?: string;
+  completed?: boolean;
+};
 
 export default function SplitDayFlow() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedDay, setSelectedDay] = useState<SplitDay | null>(null);
   const [sessionData, setSessionData] = useState<Record<string, UISessionSet[]>>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Check URL query param on mount (e.g. ?day=Push)
+  useEffect(() => {
+    const dayParam = searchParams.get("day") as SplitDay | null;
+    if (dayParam && SPLIT_DAYS.some((d) => d.day === dayParam)) {
+      handleSelectDay(dayParam);
+    }
+  }, [searchParams]);
 
   const handleSelectDay = (day: SplitDay) => {
     if (day === "Rest") {
@@ -48,6 +74,8 @@ export default function SplitDayFlow() {
     }
 
     const template = getTemplateForDay(day);
+    if (!template) return;
+
     const initialData: Record<string, UISessionSet[]> = {};
 
     template.exercises.forEach((ex) => {
@@ -70,7 +98,7 @@ export default function SplitDayFlow() {
               } else {
                 const increment = lastSet.weight < 20 ? 2.5 : 5;
                 defaultWeight = lastSet.weight + increment;
-                prMessage = `PR 12 reps tercapai! Beban naik +${increment}kg (sebelumnya ${lastSet.weight}kg)`;
+                prMessage = `Overload tercapai: target 12 reps tembus. Beban dinaikkan +${increment}kg (sebelumnya ${lastSet.weight}kg).`;
               }
             } else {
               defaultWeight = lastSet.weight;
@@ -82,6 +110,7 @@ export default function SplitDayFlow() {
             reps: 0,
             weight: defaultWeight,
             prMessage,
+            completed: false,
           });
           weightIndex++;
         }
@@ -91,6 +120,7 @@ export default function SplitDayFlow() {
 
     setSessionData(initialData);
     setSelectedDay(day);
+    setSaveError(null);
   };
 
   const handleSetChange = (
@@ -101,7 +131,39 @@ export default function SplitDayFlow() {
   ) => {
     setSessionData((prev) => {
       const updatedEx = [...prev[exId]];
-      updatedEx[setIndex] = { ...updatedEx[setIndex], [field]: value };
+      const targetVal = Math.max(0, value);
+      updatedEx[setIndex] = { ...updatedEx[setIndex], [field]: targetVal };
+      return { ...prev, [exId]: updatedEx };
+    });
+  };
+
+  const adjustWeight = (exId: string, setIndex: number, delta: number) => {
+    setSessionData((prev) => {
+      const current = prev[exId][setIndex].weight || 0;
+      const nextWeight = Math.max(0, parseFloat((current + delta).toFixed(1)));
+      const updatedEx = [...prev[exId]];
+      updatedEx[setIndex] = { ...updatedEx[setIndex], weight: nextWeight };
+      return { ...prev, [exId]: updatedEx };
+    });
+  };
+
+  const adjustReps = (exId: string, setIndex: number, delta: number) => {
+    setSessionData((prev) => {
+      const current = prev[exId][setIndex].reps || 0;
+      const nextReps = Math.max(0, current + delta);
+      const updatedEx = [...prev[exId]];
+      updatedEx[setIndex] = { ...updatedEx[setIndex], reps: nextReps };
+      return { ...prev, [exId]: updatedEx };
+    });
+  };
+
+  const toggleSetComplete = (exId: string, setIndex: number) => {
+    setSessionData((prev) => {
+      const updatedEx = [...prev[exId]];
+      updatedEx[setIndex] = {
+        ...updatedEx[setIndex],
+        completed: !updatedEx[setIndex].completed,
+      };
       return { ...prev, [exId]: updatedEx };
     });
   };
@@ -113,12 +175,12 @@ export default function SplitDayFlow() {
     const exercises: SessionExercise[] = [];
 
     for (const ex of template.exercises) {
-      const sets = sessionData[ex.id];
+      const sets = sessionData[ex.id] || [];
       const cleanSets: SessionSet[] = [];
 
       for (let i = 0; i < sets.length; i++) {
         if (!sets[i].reps || sets[i].reps <= 0) {
-          alert(`Harap isi reps untuk set ke-${i + 1} pada ${ex.name}`);
+          setSaveError(`Harap isi jumlah repetisi untuk Set #${i + 1} pada "${ex.name}"`);
           return;
         }
         cleanSets.push({
@@ -145,136 +207,312 @@ export default function SplitDayFlow() {
     router.push("/history");
   };
 
+  // Compute live completed sets count & total volume
+  const { totalSetsCount, completedSetsCount, currentVolume } = useMemo(() => {
+    let total = 0;
+    let completed = 0;
+    let volume = 0;
+
+    Object.values(sessionData).forEach((sets) => {
+      sets.forEach((s) => {
+        total++;
+        if (s.completed || (s.reps > 0 && s.weight > 0)) {
+          completed++;
+        }
+        volume += (s.reps || 0) * (s.weight || 0);
+      });
+    });
+
+    return { totalSetsCount: total, completedSetsCount: completed, currentVolume: volume };
+  }, [sessionData]);
+
+  // STAGE 1: Choose Split Day
   if (!selectedDay) {
-    // TAHAP 1: Pilih Split Day
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {SPLIT_DAYS.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.day}
-              onClick={() => handleSelectDay(item.day)}
-              className="flex flex-col items-center justify-center p-5 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800/80 hover:border-emerald-500/40 transition-all active:scale-[0.98] group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-emerald-400 mb-3 group-hover:scale-105 transition-transform">
-                <Icon className="w-5 h-5" />
-              </div>
-              <span className="text-zinc-200 font-semibold text-sm">{item.label}</span>
-            </button>
-          );
-        })}
+      <div className="space-y-4 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
+            PILIH JADWAL LATIHAN
+          </span>
+          <span className="text-[11px] font-mono text-carbon-500">
+            7 PILIHAN TERSEDIA
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {SPLIT_DAYS.map((item) => {
+            const Icon = item.icon;
+            const isRest = item.day === "Rest";
+
+            return (
+              <button
+                key={item.day}
+                onClick={() => handleSelectDay(item.day)}
+                className={`p-4 rounded-xl border text-left transition-all active:scale-[0.99] flex items-start gap-3.5 group ${
+                  isRest
+                    ? "bg-carbon-900/60 border-carbon-800 hover:border-slate-600 hover:bg-carbon-850"
+                    : "bg-carbon-900 border-carbon-800 hover:border-volt-500/50 hover:bg-carbon-850"
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                  isRest
+                    ? "bg-carbon-800 border-carbon-700 text-slate-400 group-hover:text-slate-200"
+                    : "bg-carbon-800 border-carbon-700 text-volt-400 group-hover:bg-volt-500 group-hover:text-carbon-950 group-hover:border-volt-400"
+                }`}>
+                  <Icon className="w-5 h-5 stroke-[2.2]" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-extrabold text-sm text-white tracking-wide uppercase">
+                      {item.label}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-carbon-800 border border-carbon-700 text-slate-300">
+                      {item.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1 leading-snug">
+                    {item.focus}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }
 
-  // TAHAP 2: Isi Gerakan
+  // STAGE 2: Workout Logging Grid
   const template = getTemplateForDay(selectedDay);
 
   return (
     <>
-      <div className="space-y-6 pb-24 animate-fade-in">
-        <div className="flex items-center justify-between bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl">
-          <div>
-            <h2 className="text-lg font-bold text-zinc-100">Sesi {selectedDay}</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Isi beban dan repetisi yang berhasil diselesaikan.
-            </p>
+      <div className="space-y-5 pb-32 animate-fade-in">
+        {/* Sticky Split Header & Progress Bar */}
+        <div className="rounded-xl border border-carbon-750 bg-carbon-900 p-4 shadow-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="px-2 py-0.5 rounded bg-volt-500 text-carbon-950 text-xs font-mono font-black uppercase tracking-wider">
+                {selectedDay}
+              </span>
+              <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight uppercase">
+                {template.exercises.length} Gerakan Terprogram
+              </h2>
+            </div>
+
+            <button
+              onClick={() => setSelectedDay(null)}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-slate-400 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Ganti Split</span>
+            </button>
           </div>
-          <button
-            onClick={() => setSelectedDay(null)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Ganti Split
-          </button>
+
+          {/* Metric Bar */}
+          <div className="flex items-center justify-between pt-2 border-t border-carbon-800 text-xs font-mono">
+            <span className="text-slate-400">
+              Set Selesai:{" "}
+              <strong className="text-volt-400">
+                {completedSetsCount}/{totalSetsCount}
+              </strong>
+            </span>
+            <span className="text-slate-400">
+              Volume Sesi:{" "}
+              <strong className="text-white">
+                {currentVolume.toLocaleString("id-ID")} kg
+              </strong>
+            </span>
+          </div>
         </div>
 
+        {/* Validation error notification */}
+        {saveError && (
+          <div className="p-3.5 rounded-lg border border-red-500/30 bg-red-950/40 text-red-300 text-xs font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+            <span>{saveError}</span>
+          </div>
+        )}
+
+        {/* Exercises List */}
         <div className="space-y-4">
           {template.exercises.map((ex, exIndex) => {
-            const sets = sessionData[ex.id];
-            return (
-              <div key={ex.id} className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-4">
-                <h3 className="font-bold text-zinc-100 text-sm sm:text-base flex items-center gap-2">
-                  <span className="text-emerald-400 text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                    {exIndex + 1}
-                  </span>
-                  {ex.name}
-                </h3>
+            const sets = sessionData[ex.id] || [];
+            const exIndexPadded = (exIndex + 1).toString().padStart(2, "0");
 
-                <div className="space-y-3">
-                  {sets.map((set, i) => (
-                    <div key={i} className="space-y-2">
-                      {set.prMessage && (
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
-                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                          <span>{set.prMessage}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        {/* Badge Set Type */}
+            return (
+              <div 
+                key={ex.id} 
+                className="bg-carbon-900 border border-carbon-800 rounded-xl overflow-hidden shadow-sm"
+              >
+                {/* Exercise Header */}
+                <div className="px-4 py-3 bg-carbon-850 border-b border-carbon-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-mono text-xs font-bold text-volt-400 px-1.5 py-0.5 rounded bg-carbon-900 border border-carbon-750">
+                      {exIndexPadded}
+                    </span>
+                    <h3 className="font-bold text-white text-sm sm:text-base tracking-tight">
+                      {ex.name}
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {sets.length} SET
+                  </span>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  {sets.map((set, i) => {
+                    const isPR = set.type === "PR";
+                    const isDone = set.completed;
+
+                    return (
+                      <div key={i} className="space-y-1.5">
+                        {/* Progressive overload insight alert */}
+                        {set.prMessage && (
+                          <div className="flex items-start gap-2 text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 px-3 py-2 rounded-lg">
+                            <TrendingUp className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+                            <span>{set.prMessage}</span>
+                          </div>
+                        )}
+
+                        {/* Set Row Item */}
                         <div
-                          className={`w-14 text-center py-2 text-xs font-bold rounded-lg border shrink-0 ${
-                            set.type === "PR"
-                              ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                              : "bg-zinc-800/80 border-zinc-700 text-zinc-400"
+                          className={`p-2.5 rounded-lg border transition-all flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 ${
+                            isDone
+                              ? "bg-carbon-850/80 border-volt-500/40"
+                              : "bg-carbon-950 border-carbon-800"
                           }`}
                         >
-                          {set.type}
-                        </div>
+                          {/* Set badge */}
+                          <div className="flex items-center gap-1.5 min-w-[72px]">
+                            <span className="font-mono text-xs font-bold text-slate-400">
+                              #{i + 1}
+                            </span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border uppercase ${
+                                isPR
+                                  ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
+                                  : "bg-carbon-800 border-carbon-700 text-slate-400"
+                              }`}
+                            >
+                              {isPR ? "PR SET" : "VOL"}
+                            </span>
+                          </div>
 
-                        {/* Weight Input */}
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.5"
-                            value={set.weight === 0 && set.type === "Normal" && ex.defaultWeights[0] === 0 ? "" : set.weight}
-                            onChange={(e) =>
-                              handleSetChange(ex.id, i, "weight", Number(e.target.value))
-                            }
-                            placeholder="0"
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-8 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
-                          />
-                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
-                            kg
+                          {/* Weight control with quick steppers */}
+                          <div className="flex-1 flex items-center bg-carbon-900 border border-carbon-750 rounded-md overflow-hidden min-w-[120px]">
+                            <button
+                              type="button"
+                              onClick={() => adjustWeight(ex.id, i, -2.5)}
+                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
+                              title="Kurang 2.5 kg"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <div className="flex-1 flex items-center justify-center">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={set.weight === 0 && set.type === "Normal" && ex.defaultWeights[0] === 0 ? "" : set.weight}
+                                onChange={(e) =>
+                                  handleSetChange(ex.id, i, "weight", Number(e.target.value))
+                                }
+                                placeholder="0"
+                                className="w-full text-center bg-transparent py-1.5 text-sm font-mono font-bold text-white focus:outline-none tabular-nums"
+                              />
+                              <span className="text-[11px] font-mono text-slate-400 pr-2 pointer-events-none">
+                                kg
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => adjustWeight(ex.id, i, 2.5)}
+                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
+                              title="Tambah 2.5 kg"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+
+                          {/* Separator */}
+                          <span className="text-carbon-600 font-mono font-bold text-xs hidden sm:inline">
+                            ×
                           </span>
-                        </div>
 
-                        <span className="text-zinc-600 text-sm font-bold">×</span>
+                          {/* Reps control with quick steppers */}
+                          <div className="flex-1 flex items-center bg-carbon-900 border border-carbon-750 rounded-md overflow-hidden min-w-[120px]">
+                            <button
+                              type="button"
+                              onClick={() => adjustReps(ex.id, i, -1)}
+                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
+                              title="Kurang 1 rep"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <div className="flex-1 flex items-center justify-center">
+                              <input
+                                type="number"
+                                min="0"
+                                value={set.reps || ""}
+                                onChange={(e) =>
+                                  handleSetChange(ex.id, i, "reps", Number(e.target.value))
+                                }
+                                placeholder="Reps"
+                                className="w-full text-center bg-transparent py-1.5 text-sm font-mono font-bold text-white focus:outline-none tabular-nums"
+                              />
+                              <span className="text-[11px] font-mono text-slate-400 pr-2 pointer-events-none">
+                                reps
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => adjustReps(ex.id, i, 1)}
+                              className="px-2.5 py-2 text-slate-400 hover:text-white hover:bg-carbon-800 active:bg-carbon-750 transition-colors"
+                              title="Tambah 1 rep"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
 
-                        {/* Reps Input */}
-                        <div className="flex-1 relative">
-                          <input
-                            type="number"
-                            min="1"
-                            value={set.reps || ""}
-                            onChange={(e) =>
-                              handleSetChange(ex.id, i, "reps", Number(e.target.value))
-                            }
-                            placeholder="Reps"
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-3 pr-10 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-emerald-500 transition-colors"
-                          />
-                          <span className="absolute right-3 top-2.5 text-xs text-zinc-500 font-medium pointer-events-none">
-                            reps
-                          </span>
+                          {/* Completed set toggle */}
+                          <button
+                            type="button"
+                            onClick={() => toggleSetComplete(ex.id, i)}
+                            className={`h-9 px-3 rounded-md flex items-center justify-center gap-1.5 text-xs font-mono font-bold transition-all ${
+                              isDone
+                                ? "bg-volt-500 text-carbon-950 shadow-sm"
+                                : "bg-carbon-800 text-slate-400 hover:text-white hover:bg-carbon-750"
+                            }`}
+                            title="Tandai set selesai"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span className="hidden sm:inline">
+                              {isDone ? "DONE" : "CEK"}
+                            </span>
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
         </div>
 
-        <button
-          onClick={handleSaveSession}
-          className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold py-3.5 rounded-xl transition-all active:scale-[0.99] shadow-lg shadow-emerald-500/10"
-        >
-          Simpan Sesi Latihan
-        </button>
+        {/* Primary Save Action */}
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={handleSaveSession}
+            className="w-full bg-volt-500 hover:bg-volt-400 active:scale-[0.99] text-carbon-950 font-extrabold text-sm uppercase tracking-wider py-4 rounded-xl transition-all shadow-xl shadow-volt-500/15 flex items-center justify-center gap-2"
+          >
+            <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+            <span>Simpan Sesi Latihan Ini</span>
+          </button>
+        </div>
       </div>
 
       <Stopwatch />

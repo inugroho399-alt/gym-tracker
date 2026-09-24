@@ -10,20 +10,52 @@ import {
   Dumbbell, 
   ChevronDown, 
   Moon, 
-  Filter 
+  Trophy
 } from "lucide-react";
 import type { WorkoutSession, SplitDay } from "@/types/workout";
 import { getWorkoutSessions } from "@/lib/storage";
 
+const SPLIT_THEMES: Record<SplitDay, { badge: string; text: string; bg: string; border: string }> = {
+  Push: { badge: "PUSH", text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
+  Pull: { badge: "PULL", text: "text-sky-400", bg: "bg-sky-500/10", border: "border-sky-500/30" },
+  Arms: { badge: "ARMS", text: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/30" },
+  Legs: { badge: "LEGS", text: "text-volt-400", bg: "bg-volt-500/10", border: "border-volt-500/30" },
+  Upper: { badge: "UPPER", text: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/30" },
+  Lower: { badge: "LOWER", text: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30" },
+  Rest: { badge: "REST", text: "text-slate-400", bg: "bg-slate-800", border: "border-slate-700" },
+};
+
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("id-ID", {
+  const d = new Date(iso);
+  return d.toLocaleDateString("id-ID", {
+    weekday: "short",
     day: "numeric",
     month: "short",
     year: "numeric",
   });
 }
 
-// ─── Individual Session Card with Accordion ───────────────────────────────────
+function computeSessionVolume(session: WorkoutSession): number {
+  let volume = 0;
+  session.exercises.forEach((ex) => {
+    ex.sets.forEach((s) => {
+      volume += (s.reps || 0) * (s.weight || 0);
+    });
+  });
+  return volume;
+}
+
+function countPRSets(session: WorkoutSession): number {
+  let count = 0;
+  session.exercises.forEach((ex) => {
+    ex.sets.forEach((s) => {
+      if (s.type === "PR") count++;
+    });
+  });
+  return count;
+}
+
+// ─── Individual Session Card ──────────────────────────────────────────────────
 
 const SessionCard = memo(function SessionCard({ 
   session, 
@@ -33,21 +65,28 @@ const SessionCard = memo(function SessionCard({
   defaultExpanded?: boolean 
 }) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const theme = SPLIT_THEMES[session.day] || SPLIT_THEMES.Push;
 
   if (session.day === "Rest") {
     return (
-      <article className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 flex items-center justify-between">
+      <article className="rounded-xl border border-carbon-800 bg-carbon-900/50 p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-400">
+          <div className="w-9 h-9 rounded-lg bg-carbon-800 border border-carbon-700 flex items-center justify-center text-slate-400">
             <Moon className="w-4 h-4" />
           </div>
-          <span className="font-semibold text-zinc-300 text-sm">Rest Day</span>
+          <div>
+            <span className="font-extrabold text-white text-sm uppercase tracking-wide">
+              Rest & Recovery Day
+            </span>
+            <p className="text-[11px] text-slate-400 font-mono">
+              Pemulihan otot & sistem saraf
+            </p>
+          </div>
         </div>
         <time
           dateTime={session.date}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/60 text-xs font-medium text-zinc-400"
+          className="font-mono text-xs text-slate-400 bg-carbon-850 px-2.5 py-1 rounded border border-carbon-750"
         >
-          <Clock className="w-3.5 h-3.5" />
           {formatDate(session.date)}
         </time>
       </article>
@@ -55,84 +94,107 @@ const SessionCard = memo(function SessionCard({
   }
 
   const totalExercises = session.exercises.length;
+  const sessionVolume = computeSessionVolume(session);
+  const prCount = countPRSets(session);
 
   return (
-    <article className="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden transition-colors">
-      {/* Accordion Header */}
+    <article className="rounded-xl border border-carbon-800 bg-carbon-900 overflow-hidden shadow-sm transition-colors">
+      {/* Header / Accordion trigger */}
       <button
         type="button"
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="w-full p-4 flex items-center justify-between gap-3 text-left hover:bg-zinc-800/40 transition-colors focus:outline-none"
+        className="w-full p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-carbon-850/60 transition-colors focus:outline-none"
       >
         <div className="flex items-center gap-3">
-          <span className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold text-xs border border-emerald-500/20">
-            {session.day} Day
+          <span className={`px-2.5 py-1 rounded text-xs font-mono font-black border uppercase tracking-wider ${theme.bg} ${theme.text} ${theme.border}`}>
+            {session.day}
           </span>
-          <span className="text-xs text-zinc-400 font-medium">
-            {totalExercises} Gerakan
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-extrabold text-white uppercase tracking-tight">
+              {totalExercises} Gerakan
+            </span>
+            <span className="text-xs font-mono text-slate-400 tabular-nums">
+              Volume: {sessionVolume.toLocaleString("id-ID")} kg
+              {prCount > 0 && (
+                <span className="text-amber-400 ml-2 font-bold inline-flex items-center gap-1">
+                  <Trophy className="w-3 h-3 inline" /> {prCount} PR
+                </span>
+              )}
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-carbon-800">
           <time
             dateTime={session.date}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/60 text-xs font-medium text-zinc-400"
+            className="flex items-center gap-1.5 font-mono text-xs text-slate-400"
           >
-            <Clock className="w-3.5 h-3.5" />
+            <Clock className="w-3 h-3 text-slate-500" />
             {formatDate(session.date)}
           </time>
           
           <ChevronDown
-            className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
+            className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
               isExpanded ? "rotate-180" : ""
             }`}
           />
         </div>
       </button>
 
-      {/* GPU-Accelerated Accordion Content */}
-      <div
-        className={`grid transition-all duration-200 ease-in-out ${
-          isExpanded ? "grid-rows-[1fr] opacity-100 border-t border-zinc-800/60" : "grid-rows-[0fr] opacity-0"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="p-4 space-y-4 bg-zinc-950/40">
-            {session.exercises.map((ex) => (
-              <div key={ex.exerciseId} className="space-y-2">
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-300">
-                  <Dumbbell className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+      {/* Accordion Content */}
+      {isExpanded && (
+        <div className="border-t border-carbon-800 bg-carbon-950/60 p-4 space-y-4">
+          {session.exercises.map((ex, exIndex) => (
+            <div key={ex.exerciseId} className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-200">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-volt-400">
+                    {(exIndex + 1).toString().padStart(2, "0")}
+                  </span>
                   <span>{ex.exerciseName}</span>
                 </div>
+                <span className="text-[11px] font-mono text-carbon-500 font-normal">
+                  {ex.sets.length} sets
+                </span>
+              </div>
 
-                <div className="flex flex-wrap gap-2 pl-5">
-                  {ex.sets.map((set, j) => (
+              {/* Sets chips */}
+              <div className="flex flex-wrap gap-2 pl-4">
+                {ex.sets.map((set, j) => {
+                  const isPR = set.type === "PR";
+                  return (
                     <div
                       key={`${ex.exerciseId}-set-${j}`}
-                      className="flex items-center bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800"
+                      className={`flex items-center rounded border overflow-hidden font-mono text-xs ${
+                        isPR
+                          ? "bg-amber-500/10 border-amber-500/40"
+                          : "bg-carbon-900 border-carbon-750"
+                      }`}
                     >
                       <span
-                        className={`px-2 py-1 text-[11px] font-bold ${
-                          set.type === "PR"
-                            ? "text-amber-400 bg-amber-500/10 border-r border-amber-500/20"
-                            : "text-zinc-400 bg-zinc-800/60 border-r border-zinc-800"
+                        className={`px-1.5 py-1 text-[10px] font-black uppercase border-r ${
+                          isPR
+                            ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                            : "bg-carbon-800 text-slate-400 border-carbon-750"
                         }`}
                       >
-                        {set.type}
+                        {isPR ? "PR" : `#${j + 1}`}
                       </span>
-                      <div className="px-2.5 py-1 text-xs font-medium">
-                        <span className="text-zinc-100 font-semibold">{set.reps}</span>
-                        <span className="text-zinc-500 text-[10px] mx-1">×</span>
-                        <span className="text-emerald-400 font-semibold">{set.weight}kg</span>
+                      <div className="px-2 py-1 font-bold text-slate-100 tabular-nums">
+                        <span>{set.reps}</span>
+                        <span className="text-slate-500 text-[10px] mx-1">×</span>
+                        <span className={isPR ? "text-amber-400" : "text-white"}>
+                          {set.weight}kg
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
     </article>
   );
 });
@@ -141,23 +203,25 @@ const SessionCard = memo(function SessionCard({
 
 function EmptyState() {
   return (
-    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-10 text-center space-y-4">
-      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+    <div className="rounded-xl border border-dashed border-carbon-800 bg-carbon-900/40 p-10 text-center space-y-4">
+      <div className="w-12 h-12 rounded-xl bg-carbon-800 border border-carbon-700 flex items-center justify-center mx-auto text-volt-400">
         <NotebookPen className="w-6 h-6" />
       </div>
       <div className="space-y-1">
-        <p className="text-base text-zinc-100 font-bold">Belum ada catatan latihan</p>
-        <p className="text-zinc-500 text-xs max-w-xs mx-auto">
-          Mulai lacak progresmu. Setiap sesi yang kamu selesaikan akan tersimpan di sini.
+        <p className="text-base text-white font-extrabold uppercase tracking-wide">
+          Buku Latihan Masih Bersih
+        </p>
+        <p className="text-slate-400 text-xs max-w-sm mx-auto">
+          Mulai rekam sesi latihan pertamamu. Setiap beban dan repetisi yang kamu selesaikan akan otomatis tercatat di sini.
         </p>
       </div>
       <Link
         href="/add"
         id="empty-state-add-link"
-        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-all active:scale-[0.98]"
+        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-volt-500 hover:bg-volt-400 text-carbon-950 font-extrabold text-xs uppercase tracking-wider transition-all active:scale-[0.98]"
       >
-        <Plus className="w-4 h-4 stroke-[2.5]" />
-        <span>Mulai Latihan Pertama</span>
+        <Plus className="w-4 h-4 stroke-[3]" />
+        <span>Catat Latihan Pertama</span>
       </Link>
     </div>
   );
@@ -165,17 +229,17 @@ function EmptyState() {
 
 function EmptyFilterState({ onReset }: { onReset: () => void }) {
   return (
-    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-8 text-center space-y-3">
-      <SearchX className="w-6 h-6 text-zinc-500 mx-auto" />
-      <p className="text-zinc-400 text-xs">
-        Tidak ada catatan untuk split day ini.
+    <div className="rounded-xl border border-dashed border-carbon-800 bg-carbon-900/40 p-8 text-center space-y-3">
+      <SearchX className="w-6 h-6 text-slate-500 mx-auto" />
+      <p className="text-slate-400 text-xs font-mono">
+        Tidak ada catatan latihan untuk kategori split ini.
       </p>
       <button
         type="button"
         onClick={onReset}
-        className="text-emerald-400 text-xs font-semibold hover:text-emerald-300 transition-colors"
+        className="text-volt-400 text-xs font-mono font-bold hover:underline transition-colors uppercase tracking-wider"
       >
-        Tampilkan Semua Sesi →
+        ← Tampilkan Semua Sesi
       </button>
     </div>
   );
@@ -183,19 +247,10 @@ function EmptyFilterState({ onReset }: { onReset: () => void }) {
 
 function HistorySkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-zinc-800/80 pb-4">
-        <div className="space-y-2">
-          <div className="h-6 w-32 bg-zinc-800 rounded"></div>
-          <div className="h-4 w-48 bg-zinc-800/50 rounded"></div>
-        </div>
-        <div className="h-11 w-40 bg-zinc-800 rounded-lg"></div>
-      </div>
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 w-full bg-zinc-800/30 border border-zinc-800 rounded-xl"></div>
-        ))}
-      </div>
+    <div className="space-y-4 animate-pulse">
+      <div className="h-10 bg-carbon-900 rounded-lg" />
+      <div className="h-28 bg-carbon-900 rounded-xl" />
+      <div className="h-28 bg-carbon-900 rounded-xl" />
     </div>
   );
 }
@@ -232,41 +287,70 @@ export default function HistoryPage() {
   const hasFilteredResults = filteredSessions.length > 0;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+    <div className="space-y-5 sm:space-y-6 animate-fade-in pb-12">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-800 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">Riwayat Sesi</h1>
-          <p className="text-zinc-400 text-xs sm:text-sm mt-0.5">
+          <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-volt-400">
+            TRAINING LEDGER
+          </span>
+          <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+            Riwayat Sesi
+          </h1>
+          <p className="text-slate-400 text-xs mt-0.5 font-mono">
             {hasAnySessions
-              ? `${sessions.length} total sesi latihan tercatat.`
-              : "Pantau histori latihanmu dari waktu ke waktu."}
+              ? `${sessions.length} total sesi angkatan tercatat.`
+              : "Dokumentasi perkembangan latihan angkat beban."}
           </p>
         </div>
 
-        {hasAnySessions && (
-          <div className="relative">
-            <select
-              value={filterDay}
-              onChange={(e) => {
-                setFilterDay(e.target.value);
-                setDisplayLimit(INITIAL_LIMIT);
-              }}
-              className="w-full sm:w-auto min-h-[44px] appearance-none rounded-lg bg-zinc-900 border border-zinc-800 px-3.5 py-2 pr-9 text-zinc-100 text-sm font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
-            >
-              <option value={ALL_VALUE}>Semua Split Day</option>
-              {SPLIT_DAYS.map((day) => (
-                <option key={day} value={day}>
-                  {day} Day
-                </option>
-              ))}
-            </select>
-            <Filter className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500" />
-          </div>
-        )}
+        {/* Quick Add Button */}
+        <Link
+          href="/add"
+          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-volt-500 hover:bg-volt-400 text-carbon-950 font-extrabold text-xs uppercase tracking-wider transition-all"
+        >
+          <Plus className="w-3.5 h-3.5 stroke-[3]" />
+          <span>Sesi Baru</span>
+        </Link>
       </div>
 
-      {/* Content area */}
+      {/* Horizontal Tactical Filter Bar */}
+      {hasAnySessions && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-mono font-bold">
+          <button
+            type="button"
+            onClick={() => setFilterDay(ALL_VALUE)}
+            className={`px-3 py-1.5 rounded-md uppercase whitespace-nowrap transition-all ${
+              filterDay === ALL_VALUE
+                ? "bg-volt-500 text-carbon-950 shadow-sm"
+                : "bg-carbon-900 text-slate-400 hover:text-white border border-carbon-800"
+            }`}
+          >
+            Semua ({sessions.length})
+          </button>
+          {SPLIT_DAYS.map((day) => {
+            const count = sessions.filter((s) => s.day === day).length;
+            const isActive = filterDay === day;
+
+            return (
+              <button
+                key={day}
+                type="button"
+                onClick={() => setFilterDay(day)}
+                className={`px-3 py-1.5 rounded-md uppercase whitespace-nowrap transition-all ${
+                  isActive
+                    ? "bg-volt-500 text-carbon-950 shadow-sm"
+                    : "bg-carbon-900 text-slate-400 hover:text-white border border-carbon-800"
+                }`}
+              >
+                {day} {count > 0 && <span className="opacity-70">({count})</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Content Area */}
       {!hasAnySessions ? (
         <EmptyState />
       ) : !hasFilteredResults ? (
@@ -277,7 +361,7 @@ export default function HistoryPage() {
             <SessionCard
               key={session.id}
               session={session}
-              defaultExpanded={index < 3}
+              defaultExpanded={index < 2}
             />
           ))}
 
@@ -286,9 +370,9 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => setDisplayLimit((prev) => prev + 20)}
-                className="px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold transition-all"
+                className="px-5 py-2.5 rounded-lg border border-carbon-750 bg-carbon-900 hover:bg-carbon-850 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider transition-all"
               >
-                Muat Lebih Banyak ({filteredSessions.length - displayLimit} sesi tersisa)
+                Muat Lebih Banyak ({filteredSessions.length - displayLimit} Sesi Tersisa)
               </button>
             </div>
           )}

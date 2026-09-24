@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#090a0e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -18,13 +18,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Gym Progress Tracker",
-  description: "Lacak sesi latihan dan progressive overload secara terstruktur.",
+  title: "IRONLOG — Progressive Overload Gym Tracker",
+  description: "Buku catatan latihan angkat beban & progressive overload tanpa distraksi.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "GymTracker",
+    title: "IRONLOG",
   },
 };
 
@@ -34,11 +34,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
-      <body className={`${inter.className} bg-zinc-950 text-zinc-100 min-h-screen overflow-x-hidden flex flex-col`}>
+    <html lang="id" className="antialiased selection:bg-volt-400/20 selection:text-volt-300">
+      <body className={`${inter.className} bg-carbon-950 bg-tech-grid text-slate-100 min-h-screen overflow-x-hidden flex flex-col font-sans`}>
         <Header />
         
-        <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 sm:py-8">
+        <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-5 sm:py-7">
           {children}
         </main>
       </body>
