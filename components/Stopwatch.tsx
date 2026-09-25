@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, Square } from "lucide-react";
+import { Play, Pause, RotateCcw } from "lucide-react";
 
 export default function Stopwatch() {
   const [time, setTime] = useState(0);
@@ -35,30 +35,32 @@ export default function Stopwatch() {
   };
 
   return (
-    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-zinc-900/95 backdrop-blur-md border border-zinc-700 p-2 pl-4 pr-3 rounded-full shadow-2xl shadow-black/50">
-      <span className="font-mono text-xl font-bold text-zinc-100 tracking-wider">
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-zinc-900/95 backdrop-blur-md border border-zinc-800 p-2 pl-4 pr-3 rounded-full shadow-2xl shadow-black/60">
+      <span className="font-mono text-lg font-bold text-zinc-100 tracking-wider">
         {formatTime(time)}
       </span>
-      <div className="w-px h-6 bg-zinc-700 mx-1"></div>
+      <div className="w-px h-5 bg-zinc-800 mx-0.5"></div>
       <button
         onClick={toggleTimer}
-        className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+        className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${
           isRunning
-            ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
-            : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+            ? "bg-amber-500/15 text-amber-400 hover:bg-amber-500/25"
+            : "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25"
         }`}
+        title={isRunning ? "Jeda" : "Mulai"}
       >
         {isRunning ? (
-          <Pause className="w-5 h-5 fill-current" />
+          <Pause className="w-4 h-4 fill-current" />
         ) : (
-          <Play className="w-5 h-5 fill-current ml-0.5" />
+          <Play className="w-4 h-4 fill-current ml-0.5" />
         )}
       </button>
       <button
         onClick={resetTimer}
-        className="w-10 h-10 flex items-center justify-center rounded-full bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
+        className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/60 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
+        title="Reset"
       >
-        <Square className="w-4 h-4 fill-current" />
+        <RotateCcw className="w-4 h-4" />
       </button>
     </div>
   );

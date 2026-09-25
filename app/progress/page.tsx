@@ -91,7 +91,7 @@ function NotEnoughDataState({ name }: { name: string }) {
       <div className="space-y-1">
         <p className="text-base text-zinc-100 font-bold">Butuh minimal 2 sesi</p>
         <p className="text-zinc-500 text-xs max-w-xs mx-auto">
-          Baru ada 1 catatan untuk <span className="text-zinc-200 font-semibold">{name}</span>. Grafik akan muncul setelah kamu menyelesaikan 1 sesi lagi!
+          Baru ada 1 catatan untuk <span className="text-zinc-200 font-semibold">{name}</span>. Grafik tren perkembangan akan aktif setelah kamu menyelesaikan 1 sesi lagi.
         </p>
       </div>
       <Link
@@ -160,7 +160,7 @@ function NoDataState() {
       <div className="space-y-1">
         <p className="text-base text-zinc-100 font-bold">Belum ada data latihan</p>
         <p className="text-zinc-500 text-xs max-w-xs mx-auto">
-          Kamu belum mencatat sesi latihan apa pun. Catat latihan pertamamu untuk mulai melacak progress!
+          Kamu belum mencatat sesi latihan apa pun. Selesaikan sesi latihan pertamamu untuk mulai melacak progres kekuatan.
         </p>
       </div>
       <Link

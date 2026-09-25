@@ -33,6 +33,7 @@ export default function SplitDayFlow() {
   const router = useRouter();
   const [selectedDay, setSelectedDay] = useState<SplitDay | null>(null);
   const [sessionData, setSessionData] = useState<Record<string, UISessionSet[]>>({});
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSelectDay = (day: SplitDay) => {
     if (day === "Rest") {
@@ -118,7 +119,7 @@ export default function SplitDayFlow() {
 
       for (let i = 0; i < sets.length; i++) {
         if (!sets[i].reps || sets[i].reps <= 0) {
-          alert(`Harap isi reps untuk set ke-${i + 1} pada ${ex.name}`);
+          setErrorMsg(`Harap isi repetisi untuk set ke-${i + 1} pada "${ex.name}"`);
           return;
         }
         cleanSets.push({
@@ -189,6 +190,12 @@ export default function SplitDayFlow() {
             Ganti Split
           </button>
         </div>
+
+        {errorMsg && (
+          <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-medium">
+            {errorMsg}
+          </div>
+        )}
 
         <div className="space-y-4">
           {template.exercises.map((ex, exIndex) => {
