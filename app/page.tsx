@@ -40,7 +40,6 @@ export default function HomePage() {
     return (
       <div className="space-y-8 animate-pulse">
         <div className="space-y-3 pt-2">
-          <div className="h-6 w-48 bg-zinc-800 rounded-lg"></div>
           <div className="h-10 w-64 bg-zinc-800 rounded-lg"></div>
           <div className="h-4 w-full max-w-sm bg-zinc-800/50 rounded mt-2"></div>
           <div className="h-4 w-64 bg-zinc-800/50 rounded"></div>
@@ -65,11 +64,7 @@ export default function HomePage() {
     <div className="space-y-8 animate-fade-in">
       {/* Hero Section */}
       <div className="space-y-3 pt-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          Progressive Overload Tracker
-        </div>
-        
+
         <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 tracking-tight leading-tight">
           Lacak Beban, <br className="sm:hidden" />
           <span className="text-emerald-400">Tingkatkan Performa.</span>
