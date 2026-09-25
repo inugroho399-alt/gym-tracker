@@ -47,43 +47,43 @@ export default function HomePage() {
     <div className="space-y-8 animate-fade-in">
       {/* Header section */}
       <div>
-        <p className="text-xs text-neutral-400 font-medium capitalize">
+        <p className="text-xs text-neutral-500 font-medium capitalize">
           {todayStr}
         </p>
-        <h1 className="text-2xl font-bold tracking-tight text-white mt-1">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900 mt-1">
           Latihan
         </h1>
 
         {lastSession && (
-          <p className="text-xs text-neutral-400 mt-2">
-            Sesi terakhir: <span className="text-neutral-200 font-medium">{lastSession.day} Day</span> • {new Date(lastSession.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+          <p className="text-xs text-neutral-500 mt-2">
+            Sesi terakhir: <span className="text-neutral-900 font-medium">{lastSession.day} Day</span> • {new Date(lastSession.date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
           </p>
         )}
       </div>
 
       {/* Routine Selection */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
           Pilih Rutinitas
         </p>
 
-        <div className="divide-y divide-neutral-900 border border-neutral-900 rounded-xl bg-neutral-950/60 overflow-hidden">
+        <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-sm">
           {SPLITS.map((item) => (
             <Link
               key={item.day}
               href={`/add?day=${item.day}`}
-              className="flex items-center justify-between p-3.5 hover:bg-neutral-900/60 transition-colors group"
+              className="flex items-center justify-between p-3.5 hover:bg-neutral-50 transition-colors group"
             >
               <div>
-                <span className="text-sm font-medium text-white group-hover:text-neutral-100">
+                <span className="text-sm font-medium text-neutral-900">
                   {item.label} Day
                 </span>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5">
                   {item.focus}
                 </p>
               </div>
 
-              <ChevronRight className="w-4 h-4 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+              <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-neutral-700 transition-colors" />
             </Link>
           ))}
         </div>
@@ -91,9 +91,9 @@ export default function HomePage() {
 
       {/* Subtle Stats Summary */}
       {sessions.length > 0 && (
-        <div className="pt-2 border-t border-neutral-900 flex items-center justify-between text-xs text-neutral-400">
+        <div className="pt-2 border-t border-neutral-200 flex items-center justify-between text-xs text-neutral-500">
           <span>{sessions.length} sesi tercatat ({totalVolume.toLocaleString("id-ID")} kg)</span>
-          <Link href="/history" className="text-neutral-300 hover:text-white transition-colors">
+          <Link href="/history" className="text-neutral-700 hover:text-neutral-900 font-medium transition-colors">
             Lihat riwayat →
           </Link>
         </div>

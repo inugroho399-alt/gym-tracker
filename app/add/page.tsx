@@ -14,7 +14,7 @@ export default function AddWorkoutPage() {
       <div className="flex items-center justify-between pb-2">
         <Link
           href="/"
-          className="text-xs text-neutral-400 hover:text-white transition-colors"
+          className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
         >
           ← Kembali
         </Link>

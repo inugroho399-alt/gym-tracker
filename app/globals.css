@@ -4,12 +4,12 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
-    background-color: #000000;
-    color: #f5f5f5;
+    background-color: #ffffff;
+    color: #171717;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -24,7 +24,7 @@
   }
 }
 
-/* Minimal subtle scrollbar */
+/* Minimal light scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -33,9 +33,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #262626;
+  background: #e5e5e5;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #404040;
+  background: #d4d4d4;
 }

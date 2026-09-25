@@ -164,27 +164,27 @@ export default function SplitDayFlow() {
   if (!selectedDay) {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
           Pilih Rutinitas Hari Ini
         </p>
 
-        <div className="divide-y divide-neutral-900 border border-neutral-900 rounded-xl bg-neutral-950/60 overflow-hidden">
+        <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-sm">
           {SPLIT_OPTIONS.map((item) => (
             <button
               key={item.day}
               type="button"
               onClick={() => handleSelectDay(item.day)}
-              className="w-full flex items-center justify-between p-3.5 hover:bg-neutral-900/60 transition-colors text-left group"
+              className="w-full flex items-center justify-between p-3.5 hover:bg-neutral-50 transition-colors text-left group"
             >
               <div>
-                <span className="text-sm font-medium text-white group-hover:text-neutral-100">
+                <span className="text-sm font-medium text-neutral-900 group-hover:text-black">
                   {item.label}
                 </span>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5">
                   {item.focus}
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-neutral-600 group-hover:text-neutral-400 transition-colors" />
+              <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-neutral-700 transition-colors" />
             </button>
           ))}
         </div>
@@ -199,12 +199,12 @@ export default function SplitDayFlow() {
     <>
       <div className="space-y-6 pb-28">
         {/* Top Split Info */}
-        <div className="flex items-center justify-between border-b border-neutral-900 pb-3">
+        <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-neutral-900">
               {selectedDay} Day
             </h2>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-500">
               {template.exercises.length} gerakan
             </p>
           </div>
@@ -212,14 +212,14 @@ export default function SplitDayFlow() {
           <button
             type="button"
             onClick={() => setSelectedDay(null)}
-            className="text-xs text-neutral-400 hover:text-white transition-colors"
+            className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
           >
             Ganti Rutinitas
           </button>
         </div>
 
         {errorMessage && (
-          <div className="p-3 rounded-lg border border-red-900/50 bg-red-950/30 text-red-300 text-xs">
+          <div className="p-3 rounded-lg border border-red-200 bg-red-50 text-red-700 text-xs">
             {errorMessage}
           </div>
         )}
@@ -232,14 +232,14 @@ export default function SplitDayFlow() {
             return (
               <div 
                 key={ex.id} 
-                className="border border-neutral-900 rounded-xl bg-neutral-950/40 p-4 space-y-3"
+                className="border border-neutral-200 rounded-xl bg-white p-4 shadow-sm space-y-3"
               >
                 <div className="flex items-baseline justify-between">
-                  <h3 className="text-sm font-medium text-white">
+                  <h3 className="text-sm font-semibold text-neutral-900">
                     <span className="text-neutral-400 mr-2">{exIndex + 1}.</span>
                     {ex.name}
                   </h3>
-                  <span className="text-xs text-neutral-400 font-normal">
+                  <span className="text-xs text-neutral-500 font-normal">
                     {sets.length} set
                   </span>
                 </div>
@@ -259,17 +259,17 @@ export default function SplitDayFlow() {
                     return (
                       <div key={i} className="space-y-1">
                         {set.prMessage && (
-                          <p className="text-[11px] text-neutral-400 pl-1 italic">
+                          <p className="text-[11px] text-neutral-500 pl-1 italic">
                             * {set.prMessage}
                           </p>
                         )}
 
                         <div className={`grid grid-cols-12 gap-2 items-center p-1.5 rounded-lg border transition-colors ${
                           isDone 
-                            ? "bg-neutral-900/50 border-neutral-800" 
-                            : "border-neutral-900/80 bg-neutral-950"
+                            ? "bg-neutral-50 border-neutral-300" 
+                            : "border-neutral-200 bg-white"
                         }`}>
-                          <div className="col-span-2 pl-1.5 text-xs text-neutral-400 font-medium">
+                          <div className="col-span-2 pl-1.5 text-xs text-neutral-500 font-medium">
                             #{i + 1}
                             {set.type === "PR" && (
                               <span className="text-[10px] text-neutral-400 ml-1">PR</span>
@@ -286,7 +286,7 @@ export default function SplitDayFlow() {
                                 handleSetChange(ex.id, i, "weight", parseFloat(e.target.value))
                               }
                               placeholder="0"
-                              className="w-full text-center bg-neutral-900 border border-neutral-800 rounded py-1 text-xs font-medium text-white focus:outline-none focus:border-neutral-600 transition-colors"
+                              className="w-full text-center bg-neutral-50 border border-neutral-200 rounded py-1 text-xs font-medium text-neutral-900 focus:outline-none focus:border-neutral-400 focus:bg-white transition-colors"
                             />
                           </div>
 
@@ -299,7 +299,7 @@ export default function SplitDayFlow() {
                                 handleSetChange(ex.id, i, "reps", parseInt(e.target.value, 10))
                               }
                               placeholder="0"
-                              className="w-full text-center bg-neutral-900 border border-neutral-800 rounded py-1 text-xs font-medium text-white focus:outline-none focus:border-neutral-600 transition-colors"
+                              className="w-full text-center bg-neutral-50 border border-neutral-200 rounded py-1 text-xs font-medium text-neutral-900 focus:outline-none focus:border-neutral-400 focus:bg-white transition-colors"
                             />
                           </div>
 
@@ -309,8 +309,8 @@ export default function SplitDayFlow() {
                               onClick={() => toggleComplete(ex.id, i)}
                               className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
                                 isDone
-                                  ? "bg-white text-black"
-                                  : "border border-neutral-700 text-transparent hover:border-neutral-500"
+                                  ? "bg-neutral-900 text-white"
+                                  : "border border-neutral-300 text-transparent hover:border-neutral-500"
                               }`}
                               title={isDone ? "Selesai" : "Tandai selesai"}
                             >
@@ -332,7 +332,7 @@ export default function SplitDayFlow() {
           <button
             type="button"
             onClick={handleSave}
-            className="w-full bg-white hover:bg-neutral-200 active:scale-[0.99] text-black font-semibold text-xs py-3 rounded-lg transition-colors"
+            className="w-full bg-neutral-900 hover:bg-neutral-800 active:scale-[0.99] text-white font-medium text-xs py-3 rounded-lg transition-colors shadow-sm"
           >
             Simpan Sesi Latihan
           </button>

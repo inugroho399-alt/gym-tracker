@@ -33,12 +33,12 @@ const SessionItem = memo(function SessionItem({
 
   if (session.day === "Rest") {
     return (
-      <div className="border border-neutral-900 rounded-xl bg-neutral-950/40 p-4 flex items-center justify-between text-xs">
+      <div className="border border-neutral-200 rounded-xl bg-neutral-50/60 p-4 flex items-center justify-between text-xs">
         <div>
-          <span className="font-medium text-white block">Hari Istirahat</span>
-          <span className="text-neutral-400 text-[11px]">Pemulihan & regenerasi</span>
+          <span className="font-medium text-neutral-900 block">Hari Istirahat</span>
+          <span className="text-neutral-500 text-[11px]">Pemulihan & regenerasi</span>
         </div>
-        <span className="text-neutral-400">{formatDate(session.date)}</span>
+        <span className="text-neutral-500">{formatDate(session.date)}</span>
       </div>
     );
   }
@@ -46,46 +46,46 @@ const SessionItem = memo(function SessionItem({
   const volume = computeSessionVolume(session);
 
   return (
-    <div className="border border-neutral-900 rounded-xl bg-neutral-950/40 overflow-hidden">
+    <div className="border border-neutral-200 rounded-xl bg-white shadow-sm overflow-hidden">
       <button
         type="button"
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="w-full p-4 flex items-center justify-between text-left hover:bg-neutral-900/40 transition-colors"
+        className="w-full p-4 flex items-center justify-between text-left hover:bg-neutral-50 transition-colors"
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-white">
+            <span className="text-sm font-semibold text-neutral-900">
               {session.day} Day
             </span>
-            <span className="text-neutral-500">•</span>
-            <span className="text-xs text-neutral-400">
+            <span className="text-neutral-300">•</span>
+            <span className="text-xs text-neutral-500">
               {session.exercises.length} gerakan
             </span>
           </div>
-          <p className="text-xs text-neutral-400 mt-0.5">
+          <p className="text-xs text-neutral-500 mt-0.5">
             {formatDate(session.date)} • {volume.toLocaleString("id-ID")} kg volume
           </p>
         </div>
 
         <ChevronDown
-          className={`w-4 h-4 text-neutral-500 transition-transform duration-200 ${
+          className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
             isExpanded ? "rotate-180" : ""
           }`}
         />
       </button>
 
       {isExpanded && (
-        <div className="border-t border-neutral-900 px-4 py-3 bg-neutral-950/80 space-y-2.5 text-xs">
+        <div className="border-t border-neutral-100 px-4 py-3 bg-neutral-50/50 space-y-2.5 text-xs">
           {session.exercises.map((ex) => (
             <div key={ex.exerciseId} className="space-y-1">
-              <span className="font-medium text-neutral-200 block">
+              <span className="font-medium text-neutral-800 block">
                 {ex.exerciseName}
               </span>
-              <div className="flex flex-wrap gap-1.5 text-neutral-400">
+              <div className="flex flex-wrap gap-1.5 text-neutral-600">
                 {ex.sets.map((set, j) => (
                   <span
                     key={j}
-                    className="inline-block px-2 py-0.5 rounded bg-neutral-900 text-[11px] text-neutral-300"
+                    className="inline-block px-2 py-0.5 rounded bg-white border border-neutral-200 text-[11px] text-neutral-700 shadow-2xs"
                   >
                     {set.weight}kg × {set.reps}
                   </span>
@@ -123,17 +123,17 @@ export default function HistoryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
             Riwayat
           </h1>
-          <p className="text-xs text-neutral-400 mt-1">
+          <p className="text-xs text-neutral-500 mt-1">
             {sessions.length} sesi latihan tersimpan
           </p>
         </div>
 
         <Link
           href="/add"
-          className="text-xs px-3 py-1.5 rounded-md bg-white text-black font-medium hover:bg-neutral-200 transition-colors"
+          className="text-xs px-3 py-1.5 rounded-md bg-neutral-900 text-white font-medium hover:bg-neutral-800 transition-colors shadow-sm"
         >
           + Catat Sesi
         </Link>
@@ -147,8 +147,8 @@ export default function HistoryPage() {
             onClick={() => setFilterDay(ALL_VALUE)}
             className={`px-3 py-1 rounded-md transition-colors whitespace-nowrap ${
               filterDay === ALL_VALUE
-                ? "bg-neutral-800 text-white font-medium"
-                : "text-neutral-400 hover:text-white"
+                ? "bg-neutral-100 text-neutral-900 font-medium"
+                : "text-neutral-500 hover:text-neutral-900"
             }`}
           >
             Semua
@@ -163,8 +163,8 @@ export default function HistoryPage() {
                 onClick={() => setFilterDay(day)}
                 className={`px-3 py-1 rounded-md transition-colors whitespace-nowrap ${
                   filterDay === day
-                    ? "bg-neutral-800 text-white font-medium"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-neutral-100 text-neutral-900 font-medium"
+                    : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
                 {day} ({count})
@@ -177,10 +177,10 @@ export default function HistoryPage() {
       {/* Sessions list */}
       {sessions.length === 0 ? (
         <div className="py-16 text-center space-y-3">
-          <p className="text-sm text-neutral-400">Belum ada riwayat latihan.</p>
+          <p className="text-sm text-neutral-500">Belum ada riwayat latihan.</p>
           <Link
             href="/add"
-            className="inline-block text-xs px-4 py-2 rounded-md bg-white text-black font-medium hover:bg-neutral-200 transition-colors"
+            className="inline-block text-xs px-4 py-2 rounded-md bg-neutral-900 text-white font-medium hover:bg-neutral-800 transition-colors"
           >
             Catat Latihan Pertama
           </Link>

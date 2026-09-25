@@ -28,10 +28,10 @@ function CustomTooltip({ active, payload, label, unit }: CustomTooltipProps) {
   const val = payload[0].value;
 
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 shadow-lg text-xs">
-      <p className="text-neutral-400 text-[10px]">{label}</p>
-      <p className="font-semibold text-white">
-        {val.toLocaleString("id-ID")} <span className="text-neutral-400 font-normal">{unit}</span>
+    <div className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 shadow-md text-xs">
+      <p className="text-neutral-500 text-[10px]">{label}</p>
+      <p className="font-semibold text-neutral-900">
+        {val.toLocaleString("id-ID")} <span className="text-neutral-500 font-normal">{unit}</span>
       </p>
     </div>
   );
@@ -53,20 +53,20 @@ const ProgressChart = memo(function ProgressChart({ data, unit }: ProgressChartP
       >
         <CartesianGrid
           strokeDasharray="3 3"
-          stroke="#1e1e1e"
+          stroke="#f0f0f0"
           vertical={false}
         />
 
         <XAxis
           dataKey="date"
-          tick={{ fill: "#666666", fontSize: 11 }}
+          tick={{ fill: "#737373", fontSize: 11 }}
           tickLine={false}
-          axisLine={{ stroke: "#1e1e1e" }}
+          axisLine={{ stroke: "#e5e5e5" }}
           dy={6}
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fill: "#666666", fontSize: 11 }}
+          tick={{ fill: "#737373", fontSize: 11 }}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => `${v}`}
@@ -75,16 +75,16 @@ const ProgressChart = memo(function ProgressChart({ data, unit }: ProgressChartP
 
         <Tooltip
           content={<CustomTooltip unit={unit} />}
-          cursor={{ stroke: "#262626", strokeWidth: 1 }}
+          cursor={{ stroke: "#e5e5e5", strokeWidth: 1 }}
         />
 
         <Line
           type="monotone"
           dataKey="value"
-          stroke="#ffffff"
+          stroke="#171717"
           strokeWidth={2}
-          dot={{ r: 3, fill: "#ffffff", stroke: "#000000", strokeWidth: 1.5 }}
-          activeDot={{ r: 5, fill: "#ffffff" }}
+          dot={{ r: 3, fill: "#171717", stroke: "#ffffff", strokeWidth: 1.5 }}
+          activeDot={{ r: 5, fill: "#171717" }}
         />
       </LineChart>
     </ResponsiveContainer>

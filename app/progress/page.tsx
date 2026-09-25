@@ -8,7 +8,7 @@ import { getWorkoutSessions } from "@/lib/storage";
 
 const ProgressChart = dynamic(() => import("@/components/ProgressChart"), {
   ssr: false,
-  loading: () => <div className="h-[240px] flex items-center justify-center text-xs text-neutral-500">Memuat grafik...</div>,
+  loading: () => <div className="h-[240px] flex items-center justify-center text-xs text-neutral-400">Memuat grafik...</div>,
 });
 
 type Metric = "maxWeight" | "totalVolume";
@@ -95,20 +95,20 @@ export default function ProgressPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
           Progres
         </h1>
-        <p className="text-xs text-neutral-400 mt-1">
+        <p className="text-xs text-neutral-500 mt-1">
           Grafik beban dan volume latihan dari waktu ke waktu.
         </p>
       </div>
 
       {uniqueExercises.length === 0 ? (
         <div className="py-16 text-center space-y-3">
-          <p className="text-sm text-neutral-400">Belum ada data latihan untuk ditampilkan.</p>
+          <p className="text-sm text-neutral-500">Belum ada data latihan untuk ditampilkan.</p>
           <Link
             href="/add"
-            className="inline-block text-xs px-4 py-2 rounded-md bg-white text-black font-medium hover:bg-neutral-200 transition-colors"
+            className="inline-block text-xs px-4 py-2 rounded-md bg-neutral-900 text-white font-medium hover:bg-neutral-800 transition-colors shadow-sm"
           >
             Mulai Latihan
           </Link>
@@ -120,7 +120,7 @@ export default function ProgressPage() {
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-neutral-600 transition-colors"
+              className="bg-white border border-neutral-200 rounded-lg px-3 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-neutral-400 shadow-2xs transition-colors"
             >
               {uniqueExercises.map((ex) => (
                 <option key={ex.id} value={ex.id}>
@@ -135,8 +135,8 @@ export default function ProgressPage() {
                 onClick={() => setMetric("maxWeight")}
                 className={`px-3 py-1 rounded-md transition-colors ${
                   metric === "maxWeight"
-                    ? "bg-neutral-800 text-white font-medium"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-neutral-100 text-neutral-900 font-medium"
+                    : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
                 Beban Maks
@@ -146,8 +146,8 @@ export default function ProgressPage() {
                 onClick={() => setMetric("totalVolume")}
                 className={`px-3 py-1 rounded-md transition-colors ${
                   metric === "totalVolume"
-                    ? "bg-neutral-800 text-white font-medium"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-neutral-100 text-neutral-900 font-medium"
+                    : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
                 Total Volume
@@ -157,10 +157,10 @@ export default function ProgressPage() {
 
           {/* Stats summary row */}
           {chartData.length > 0 && (
-            <div className="flex items-center gap-4 text-xs text-neutral-400 pt-1 border-t border-neutral-900">
-              <span>Rekor: <strong className="text-white font-medium">{peak} {unit}</strong></span>
+            <div className="flex items-center gap-4 text-xs text-neutral-500 pt-1 border-t border-neutral-200">
+              <span>Rekor: <strong className="text-neutral-900 font-medium">{peak} {unit}</strong></span>
               <span>•</span>
-              <span>Terkini: <strong className="text-white font-medium">{current} {unit}</strong></span>
+              <span>Terkini: <strong className="text-neutral-900 font-medium">{current} {unit}</strong></span>
               <span>•</span>
               <span>{chartData.length} sesi</span>
             </div>
@@ -168,11 +168,11 @@ export default function ProgressPage() {
 
           {/* Chart Board */}
           {chartData.length < 2 ? (
-            <div className="border border-neutral-900 rounded-xl p-8 text-center text-xs text-neutral-400 bg-neutral-950/40">
+            <div className="border border-neutral-200 rounded-xl p-8 text-center text-xs text-neutral-500 bg-white shadow-sm">
               Butuh minimal 2 sesi untuk menampilkan grafik tren.
             </div>
           ) : (
-            <div className="border border-neutral-900 rounded-xl p-4 bg-neutral-950/40">
+            <div className="border border-neutral-200 rounded-xl p-4 bg-white shadow-sm">
               <ProgressChart data={chartData} unit={unit} />
             </div>
           )}

@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Gym Tracker",
   },
 };
@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className="bg-black text-neutral-100 min-h-screen flex flex-col font-sans">
+      <body className="bg-white text-neutral-900 min-h-screen flex flex-col font-sans">
         <Header />
         <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6 sm:py-8">
           {children}

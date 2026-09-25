@@ -42,17 +42,17 @@ export default function Stopwatch() {
 
   return (
     <aside aria-label="Timer Istirahat" className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
-      <div className="rounded-full border border-neutral-800 bg-neutral-950/95 backdrop-blur-md px-4 py-2 shadow-xl flex items-center gap-3">
-        <span className="text-sm font-semibold text-white tabular-nums tracking-tight">
+      <div className="rounded-full border border-neutral-200 bg-white/95 backdrop-blur-md px-4 py-2 shadow-xl flex items-center gap-3">
+        <span className="text-sm font-semibold text-neutral-900 tabular-nums tracking-tight">
           {formatTime(seconds)}
         </span>
 
-        <span className="text-neutral-700">|</span>
+        <span className="text-neutral-200">|</span>
 
         <button
           type="button"
           onClick={() => addTime(30)}
-          className="text-xs text-neutral-400 hover:text-white transition-colors"
+          className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
         >
           +30s
         </button>
@@ -62,8 +62,8 @@ export default function Stopwatch() {
           onClick={toggleTimer}
           className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${
             isRunning 
-              ? "bg-neutral-800 text-white hover:bg-neutral-700" 
-              : "bg-white text-black hover:bg-neutral-200"
+              ? "bg-neutral-100 text-neutral-900 border border-neutral-200 hover:bg-neutral-200" 
+              : "bg-neutral-900 text-white hover:bg-neutral-800"
           }`}
           title={isRunning ? "Jeda" : "Mulai"}
         >
@@ -77,7 +77,7 @@ export default function Stopwatch() {
         <button
           type="button"
           onClick={resetTimer}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
           title="Reset"
         >
           <RotateCcw className="w-3 h-3" />

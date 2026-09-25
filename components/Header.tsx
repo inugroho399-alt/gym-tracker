@@ -13,11 +13,11 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-neutral-900 bg-black/80 backdrop-blur-md sticky top-0 z-40">
+    <header className="border-b border-neutral-200 bg-white/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link 
           href="/" 
-          className="text-sm font-semibold tracking-tight text-white hover:opacity-80 transition-opacity"
+          className="text-sm font-semibold tracking-tight text-neutral-900 hover:opacity-75 transition-opacity"
         >
           Gym Tracker
         </Link>
@@ -35,8 +35,8 @@ export default function Header() {
                 href={href}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   isActive
-                    ? "bg-neutral-800 text-white"
-                    : "text-neutral-400 hover:text-neutral-200"
+                    ? "bg-neutral-100 text-neutral-900"
+                    : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
                 {label}
