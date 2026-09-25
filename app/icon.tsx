@@ -9,21 +9,20 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 20,
-          background: '#090a0e',
-          border: '1.5px solid #232835',
+          fontSize: 18,
+          background: '#000000',
+          border: '1px solid #333333',
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#ccff00',
-          borderRadius: '6px',
-          fontWeight: '900',
-          fontFamily: 'monospace',
+          color: '#ffffff',
+          borderRadius: '8px',
+          fontWeight: '700',
         }}
       >
-        I
+        G
       </div>
     ),
     { ...size }

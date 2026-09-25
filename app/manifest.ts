@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "IRONLOG — Progressive Overload Gym Tracker",
-    short_name: "IRONLOG",
-    description: "Buku catatan latihan angkat beban & progressive overload tanpa distraksi.",
+    name: "Gym Tracker",
+    short_name: "Gym Tracker",
+    description: "Catatan latihan angkat beban minimalis dan tanpa distraksi.",
     start_url: "/",
     display: "standalone",
-    background_color: "#090a0e",
-    theme_color: "#090a0e",
+    background_color: "#000000",
+    theme_color: "#000000",
     orientation: "portrait-primary",
     icons: [
       {

@@ -8,43 +8,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        volt: {
-          300: "#e4ff54",
-          400: "#d6ff1a",
-          500: "#ccff00",
-          600: "#b0e000",
-          700: "#8fb800",
+        bg: {
+          DEFAULT: "#000000",
+          card: "#111111",
+          elevated: "#1a1a1a",
+          hover: "#1f1f1f",
         },
-        carbon: {
-          950: "#090a0e",
-          900: "#101217",
-          850: "#15181f",
-          800: "#1c202a",
-          750: "#232835",
-          700: "#2c3342",
-          600: "#3d4659",
-          500: "#5a6680",
+        border: {
+          DEFAULT: "#222222",
+          subtle: "#1c1c1c",
+          strong: "#333333",
+        },
+        accent: {
+          DEFAULT: "#ffffff",
+          blue: "#3b82f6",
+          green: "#22c55e",
         },
       },
       fontFamily: {
         sans: [
           "-apple-system",
           "BlinkMacSystemFont",
+          '"SF Pro Text"',
           '"Segoe UI"',
           "Roboto",
-          '"Helvetica Neue"',
+          "Helvetica",
           "Arial",
           "sans-serif",
-        ],
-        mono: [
-          '"SF Mono"',
-          "ui-monospace",
-          "Menlo",
-          "Monaco",
-          "Consolas",
-          '"Liberation Mono"',
-          '"Courier New"',
-          "monospace",
         ],
       },
     },

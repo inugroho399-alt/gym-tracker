@@ -1,16 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
 export const viewport: Viewport = {
-  themeColor: "#090a0e",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -18,13 +11,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "IRONLOG — Progressive Overload Gym Tracker",
-  description: "Buku catatan latihan angkat beban & progressive overload tanpa distraksi.",
+  title: "Gym Tracker",
+  description: "Catatan latihan angkat beban minimalis dan tanpa distraksi.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "IRONLOG",
+    title: "Gym Tracker",
   },
 };
 
@@ -34,15 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="antialiased selection:bg-volt-400/20 selection:text-volt-300">
-      <body className={`${inter.className} bg-carbon-950 bg-tech-grid text-slate-100 min-h-screen overflow-x-hidden flex flex-col font-sans`}>
+    <html lang="id">
+      <body className="bg-black text-neutral-100 min-h-screen flex flex-col font-sans">
         <Header />
-        
-        <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-5 sm:py-7">
+        <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6 sm:py-8">
           {children}
         </main>
       </body>
     </html>
   );
 }
-

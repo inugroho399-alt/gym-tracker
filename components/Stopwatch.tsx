@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw, ChevronDown, ChevronUp, Timer } from "lucide-react";
+import { Play, Pause, RotateCcw } from "lucide-react";
 
 export default function Stopwatch() {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -23,11 +22,6 @@ export default function Stopwatch() {
   }, [isRunning]);
 
   const toggleTimer = () => {
-    if (!isRunning && typeof window !== "undefined" && "navigator" in window && "vibrate" in navigator) {
-      try {
-        navigator.vibrate(30);
-      } catch {}
-    }
     setIsRunning(!isRunning);
   };
 
@@ -46,102 +40,48 @@ export default function Stopwatch() {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (isMinimized) {
-    return (
-      <aside aria-label="Timer Istirahat Minimized" className="fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => setIsMinimized(false)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-2xl transition-all text-xs font-medium backdrop-blur-xl ${
-            isRunning
-              ? "bg-ios-card/95 border-ios-green/50 text-ios-green shadow-ios-green/10"
-              : "bg-ios-card/95 border-ios-border text-white hover:bg-ios-cardHover"
-          }`}
-        >
-          <Timer className="w-3.5 h-3.5" />
-          <span className="font-semibold tabular-nums">{formatTime(seconds)}</span>
-          <ChevronUp className="w-3.5 h-3.5 text-ios-muted" />
-        </button>
-      </aside>
-    );
-  }
-
   return (
-    <aside aria-label="Timer Istirahat" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-sm">
-      <div className="rounded-full border border-ios-border bg-ios-card/95 backdrop-blur-xl px-4 py-2.5 shadow-2xl shadow-black/60 flex items-center justify-between gap-3">
-        {/* Left: Indicator & Time */}
-        <div className="flex items-center gap-2.5 pl-1">
-          <span
-            className={`w-2 h-2 rounded-full transition-colors ${
-              isRunning ? "bg-ios-green animate-pulse" : "bg-ios-separator"
-            }`}
-          />
-          <div className="flex flex-col">
-            <span className="text-xl font-bold text-white tracking-tight tabular-nums leading-none">
-              {formatTime(seconds)}
-            </span>
-            <span className="text-[10px] text-ios-muted font-medium mt-0.5">
-              Istirahat
-            </span>
-          </div>
-        </div>
+    <aside aria-label="Timer Istirahat" className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
+      <div className="rounded-full border border-neutral-800 bg-neutral-950/95 backdrop-blur-md px-4 py-2 shadow-xl flex items-center gap-3">
+        <span className="text-sm font-semibold text-white tabular-nums tracking-tight">
+          {formatTime(seconds)}
+        </span>
 
-        {/* Center: Quick Interval Adjusters */}
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => addTime(30)}
-            className="px-2.5 py-1 rounded-full bg-ios-elevated hover:bg-ios-cardHover text-[11px] font-medium text-ios-muted hover:text-white border border-ios-border transition-colors"
-            title="Tambah 30 detik"
-          >
-            +30s
-          </button>
-          <button
-            type="button"
-            onClick={() => addTime(60)}
-            className="px-2.5 py-1 rounded-full bg-ios-elevated hover:bg-ios-cardHover text-[11px] font-medium text-ios-muted hover:text-white border border-ios-border transition-colors hidden xs:inline"
-            title="Tambah 60 detik"
-          >
-            +1m
-          </button>
-        </div>
+        <span className="text-neutral-700">|</span>
 
-        {/* Right: Controls & Minimize */}
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={toggleTimer}
-            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all ${
-              isRunning
-                ? "bg-ios-orange text-black hover:bg-ios-orange/90"
-                : "bg-ios-green text-black hover:bg-ios-green/90"
-            }`}
-            title={isRunning ? "Jeda" : "Mulai"}
-          >
-            {isRunning ? (
-              <Pause className="w-3.5 h-3.5 fill-current" />
-            ) : (
-              <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-            )}
-          </button>
+        <button
+          type="button"
+          onClick={() => addTime(30)}
+          className="text-xs text-neutral-400 hover:text-white transition-colors"
+        >
+          +30s
+        </button>
 
-          <button
-            type="button"
-            onClick={resetTimer}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-ios-elevated border border-ios-border text-ios-muted hover:text-white hover:bg-ios-cardHover transition-colors"
-            title="Reset"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
+        <button
+          type="button"
+          onClick={toggleTimer}
+          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${
+            isRunning 
+              ? "bg-neutral-800 text-white hover:bg-neutral-700" 
+              : "bg-white text-black hover:bg-neutral-200"
+          }`}
+          title={isRunning ? "Jeda" : "Mulai"}
+        >
+          {isRunning ? (
+            <Pause className="w-3 h-3 fill-current" />
+          ) : (
+            <Play className="w-3 h-3 fill-current ml-0.5" />
+          )}
+        </button>
 
-          <button
-            type="button"
-            onClick={() => setIsMinimized(true)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-ios-muted hover:text-white transition-colors"
-            title="Sembunyikan"
-          >
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={resetTimer}
+          className="w-7 h-7 rounded-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+          title="Reset"
+        >
+          <RotateCcw className="w-3 h-3" />
+        </button>
       </div>
     </aside>
   );
